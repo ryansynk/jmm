@@ -1,5 +1,76 @@
 #include <jmm/utd.h>
 
+/* Evaluates the Kouyoumjian transition function for an array of
+ * arguments x. Implemented in terms of the modified negative Fresnel
+ * integral. See Appendix B of "Introduction to Uniform Geometrical Theory of Diffraction"
+ * Equation (A.7) in Potter et. al 2023
+ */
+void F(dbl *x, dbl *f_x) {
+}
+
+/* Equation (A.6) in Potter et. al 2023
+ */
+int N(dbl beta, int n, int sign) {
+    return 0;
+}
+
+/* Equation (A.6) in Potter et. al 2023
+ */
+dbl a(dbl beta, int n, int sign) {
+    int N_ = N(beta, n, sign);
+    return 0.0;
+}
+
+dbl phi_in(dbl3 t_in, dbl3 t_e, dbl3 t_o, dbl3 n_o) {
+    dbl3 t_in_proj; // calculate using eqn A.2
+    return 0.0;
+}
+
+dbl phi_out(dbl3 t_out, dbl3 t_e, dbl3 t_o, dbl3 n_o) {
+    dbl3 t_out_proj; // calculate using eqn A.2
+    return 0.0;
+}
+
+/* Equation (A.1) in Potter et. al 2023
+ */
+dbl beta(dbl3 t_in, dbl3 t_out, dbl3 t_e, dbl3 t_o, dbl3 n_o, int sign) {
+    if (sign == 1) {
+        return phi_out(t_out, t_e, t_o, n_o) + phi_in(t_in, t_e, t_o, n_o);
+    } else {
+        return phi_out(t_out, t_e, t_o, n_o) - phi_in(t_in, t_e, t_o, n_o);
+    }
+}
+
+/* Equation (A.4) in Potter et. al 2023
+ */
+dbl L(dbl3 x) {
+    return 0.0;
+}
+
+/* Equation (A.9) in Potter et. al 2023
+ */
+dbl Di(dbl k, int n, dbl3 t_in, dbl3 t_out, dbl3 t_e, dbl3 t_o, dbl3 n_o, int sign_a, int sign_beta) {
+    dbl beta_ = beta(t_in, t_out, t_e, t_o, n_o, sign_beta);
+    dbl a_ = a(beta_, n, sign_a);
+    return 0.0;
+}
+
+/* Equation (A.8) in Potter et. al 2023
+ */
+dbl D(dbl3 x, dbl refl_coef, dbl k, int n, dbl3 t_in, dbl3 t_out, dbl3 t_e, dbl3 t_o, dbl3 n_o, int sign_a, int sign_beta) {
+    dbl D1 = Di(k, n, t_in, t_out, t_e, t_o, n_o, 1, -1);
+    dbl D2 = Di(k, n, t_in, t_out, t_e, t_o, n_o, -1, -1);
+    dbl D3 = Di(k, n, t_in, t_out, t_e, t_o, n_o, 1, 1);
+    dbl D4 = Di(k, n, t_in, t_out, t_e, t_o, n_o, -1, 1);
+
+    return D1 + D2 + refl_coef * (D3 + D4);
+}
+
+// def D_from_geometry(k, alpha, no, e, s, sp, t, hess, refl_coef=1):
+//     '''Compute the diffraction coefficient for a straight, sound-hard
+//     wedge with planar facets from a description of the local
+//     geometry. This computes the inputs to `D` and then evaluates it.
+
 // NOTE: old code from utd.py. With any luck we should be able to
 // transliterate this more or less directly...
 
