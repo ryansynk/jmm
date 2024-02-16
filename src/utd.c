@@ -11,24 +11,41 @@ void F(dbl *x, dbl *f_x) {
 /* Equation (A.6) in Potter et. al 2023
  */
 int N(dbl beta, int n, int sign) {
-    return 0;
+    int I0[3] = {-1, 0, 1};
+    dbl min_val = fabs(beta + sign * JMM_PI - 2 * JMM_PI * n * I0[0]);
+    int min_idx = 0;
+    for (int i = 1; i < 3; i++) {
+        dbl val = fabs(beta + sign * JMM_PI - 2 * JMM_PI * n * I0[i]);
+        if (val < min_val) {
+            min_val = val;
+            min_idx = i;
+        }
+    }
+    return I0[min_idx];
 }
 
 /* Equation (A.6) in Potter et. al 2023
  */
 dbl a(dbl beta, int n, int sign) {
     int N_ = N(beta, n, sign);
-    return 0.0;
+    dbl aval = 2 * cos(0.5*(2 * JMM_PI * n * N_ - beta)) * cos(0.5*(2 * JMM_PI * n * N_ - beta));
+    return aval;
 }
 
 dbl phi_in(dbl3 t_in, dbl3 t_e, dbl3 t_o, dbl3 n_o) {
-    dbl3 t_in_proj; // calculate using eqn A.2
-    return 0.0;
+    dbl3 t_aux; dbl3_dbl_mul(t_e,dbl3_dot(t_in,t_e),t_aux);
+    dbl3 t_in_perp; dbl3_sub(t_in,t_aux,t_in_perp);
+    dbl3_normalize(t_in_perp); // calculate using eqn A.2
+    dbl phi_in = atan2(dbl3_dot(t_in_perp,n_o), dbl3_dot(t_in_perp,t_o));
+    return phi_in;
 }
 
 dbl phi_out(dbl3 t_out, dbl3 t_e, dbl3 t_o, dbl3 n_o) {
-    dbl3 t_out_proj; // calculate using eqn A.2
-    return 0.0;
+    dbl3 t_aux; dbl3_dbl_mul(t_e,dbl3_dot(t_out,t_e),t_aux);
+    dbl3 t_out_perp; dbl3_sub(t_out,t_aux,t_out_perp);
+    dbl3_normalize(t_out_perp); // calculate using eqn A.2
+    dbl phi_out = atan2(dbl3_dot(t_out_perp,n_o), dbl3_dot(t_out_perp,t_o));
+    return phi_out;
 }
 
 /* Equation (A.1) in Potter et. al 2023
@@ -43,7 +60,13 @@ dbl beta(dbl3 t_in, dbl3 t_out, dbl3 t_e, dbl3 t_o, dbl3 n_o, int sign) {
 
 /* Equation (A.4) in Potter et. al 2023
  */
-dbl L(dbl3 x) {
+dbl L(dbl3 x, dbl3 t_e, dbl3 x_e) {
+    /* dbl rho_diff = dbl3_dist(x,x_e);
+    dbl3 xxe; dbl3_sub(x,x_e,xxe);
+    dbl3 x_proj; dbl3_dbl_mul(t_e, dbl3_dot(t_e, xxe),x_proj);
+    x_proj += x_e;
+    dbl rho_e = dbl3_dist(x,x_proj);
+ */
     return 0.0;
 }
 
@@ -52,16 +75,19 @@ dbl L(dbl3 x) {
 dbl Di(dbl k, int n, dbl3 t_in, dbl3 t_out, dbl3 t_e, dbl3 t_o, dbl3 n_o, int sign_a, int sign_beta) {
     dbl beta_ = beta(t_in, t_out, t_e, t_o, n_o, sign_beta);
     dbl a_ = a(beta_, n, sign_a);
-    return 0.0;
+    dbl dval = -cexp(0.25 * I * JMM_PI) / (2 * n * csqrt(2 * JMM_PI * k) * sin(beta_));
+    dval /= tan((JMM_PI + sign_a * beta_) / (2 * n));
+    // dval *= F(k * L * a_);
+    return dval;
 }
 
 /* Equation (A.8) in Potter et. al 2023
  */
 dbl D(dbl3 x, dbl refl_coef, dbl k, int n, dbl3 t_in, dbl3 t_out, dbl3 t_e, dbl3 t_o, dbl3 n_o, int sign_a, int sign_beta) {
-    dbl D1 = Di(k, n, t_in, t_out, t_e, t_o, n_o, 1, -1);
-    dbl D2 = Di(k, n, t_in, t_out, t_e, t_o, n_o, -1, -1);
-    dbl D3 = Di(k, n, t_in, t_out, t_e, t_o, n_o, 1, 1);
-    dbl D4 = Di(k, n, t_in, t_out, t_e, t_o, n_o, -1, 1);
+    dblz D1 = Di(k, n, t_in, t_out, t_e, t_o, n_o, 1, -1);
+    dblz D2 = Di(k, n, t_in, t_out, t_e, t_o, n_o, -1, -1);
+    dblz D3 = Di(k, n, t_in, t_out, t_e, t_o, n_o, 1, 1);
+    dblz D4 = Di(k, n, t_in, t_out, t_e, t_o, n_o, -1, 1);
 
     return D1 + D2 + refl_coef * (D3 + D4);
 }
