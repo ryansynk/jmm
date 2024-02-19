@@ -6,6 +6,8 @@
  * integral. See Appendix B of "Introduction to Uniform Geometrical Theory of
  * Diffraction" Equation (A.7) in Potter et. al 2023
  */
+dbl x_values[] = {0.3, 0.5, 0.7, 1.0, 1.5, 2.3, 4.0, 5.5};
+
 dblz F_values[] = {
     0.57171324 + 0.27299155 * I, 0.67676271 + 0.26823295 * I,
     0.74395036 + 0.25485662 * I, 0.80952548 + 0.23219939 * I,
@@ -13,9 +15,15 @@ dblz F_values[] = {
     0.96578828 + 0.10728867 * I, 0.97968559 + 0.08278728 * I,
 };
 
+dblz interp_values[] = {
+    0.52524735 - 0.023793 * I,   0.33593825 - 0.06688165 * I,
+    0.21858373 - 0.0755241 * I,  0.1269272 - 0.0679823 * I,
+    0.06376846 - 0.05069646 * I, 0.02457908 - 0.02962494 * I,
+    0.00926487 - 0.01633426 * I};
+
 dblz F(dbl x) {
   if (x < 0.0) {
-    // bad things. Need to implement conjugation
+    // Currently unimplemented -- need to implement conjugation
     return -1.0;
   }
 
@@ -24,10 +32,16 @@ dblz F(dbl x) {
             (2 / 3) * pow(x, 2) * cexp(-I * (JMM_PI / 4))) *
            cexp(I * (JMM_PI / 4)) * cexp(I * x);
   } else if (x >= 0.3 && x <= 5.5) {
-    return -1.0;
+    int i;
+    for (i = 0; i < 7; ++i) {
+      if (x > x_values[i] && x <= x_values[i + 1]) {
+        break;
+      }
+    }
+    return F_values[i] + interp_values[i] * (x - x_values[i]);
   } else {
-    // x >> 5.5
-    return -1.0;
+    return 1.0 + I / (2 * x) - 3 / (4 * pow(x, 2)) -
+           (I * 15) / (8 * pow(x, 3)) + 75 / (16 * pow(x, 4));
   }
 }
 
@@ -61,7 +75,7 @@ dbl phi_in(dbl3 t_in, dbl3 t_e, dbl3 t_o, dbl3 n_o) {
   dbl3_dbl_mul(t_e, dbl3_dot(t_in, t_e), t_aux);
   dbl3 t_in_perp;
   dbl3_sub(t_in, t_aux, t_in_perp);
-  dbl3_normalize(t_in_perp); // calculate using eqn A.2
+  dbl3_normalize(t_in_perp);  // calculate using eqn A.2
   dbl phi_in = atan2(dbl3_dot(t_in_perp, n_o), dbl3_dot(t_in_perp, t_o));
   return phi_in;
 }
@@ -71,7 +85,7 @@ dbl phi_out(dbl3 t_out, dbl3 t_e, dbl3 t_o, dbl3 n_o) {
   dbl3_dbl_mul(t_e, dbl3_dot(t_out, t_e), t_aux);
   dbl3 t_out_perp;
   dbl3_sub(t_out, t_aux, t_out_perp);
-  dbl3_normalize(t_out_perp); // calculate using eqn A.2
+  dbl3_normalize(t_out_perp);  // calculate using eqn A.2
   dbl phi_out = atan2(dbl3_dot(t_out_perp, n_o), dbl3_dot(t_out_perp, t_o));
   return phi_out;
 }
@@ -192,10 +206,11 @@ dbl D(dbl3 x, dbl refl_coef, dbl k, int n, dbl3 t_in, dbl3 t_out, dbl3 t_e,
 //         Di[mask] *= n*np.exp(1j*np.pi/4)
 
 //     # Now we compute the rest of the term the normal way
-//     tmp1 = -np.exp(-1j*np.pi/4)/(2*n*np.sqrt(2*np.pi*k)*np.sin(beta0[~mask]))
-//     tmp2 = 1/np.tan((np.pi + sign1*beta[~mask])/(2*n))
-//     tmp3 = _F(k*Li[~mask]*_a(beta[~mask], n, sign=sign1))
-//     Di[~mask] = tmp1*tmp2*tmp3
+//     tmp1 =
+//     -np.exp(-1j*np.pi/4)/(2*n*np.sqrt(2*np.pi*k)*np.sin(beta0[~mask])) tmp2
+//     = 1/np.tan((np.pi + sign1*beta[~mask])/(2*n)) tmp3 =
+//     _F(k*Li[~mask]*_a(beta[~mask], n, sign=sign1)) Di[~mask] =
+//     tmp1*tmp2*tmp3
 
 //     return Di
 
