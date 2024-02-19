@@ -1,95 +1,126 @@
 #include <jmm/utd.h>
+#include <math.h>
 
-/* Evaluates the Kouyoumjian transition function for an array of
- * arguments x. Implemented in terms of the modified negative Fresnel
- * integral. See Appendix B of "Introduction to Uniform Geometrical Theory of Diffraction"
- * Equation (A.7) in Potter et. al 2023
+/* Evaluates the Kouyoumjian transition function for an
+ * argument x. Implemented in terms of the modified negative Fresnel
+ * integral. See Appendix B of "Introduction to Uniform Geometrical Theory of
+ * Diffraction" Equation (A.7) in Potter et. al 2023
  */
-void F(dbl *x, dbl *f_x) {
+dblz F_values[] = {
+    0.57171324 + 0.27299155 * I, 0.67676271 + 0.26823295 * I,
+    0.74395036 + 0.25485662 * I, 0.80952548 + 0.23219939 * I,
+    0.87298908 + 0.19820824 * I, 0.92400385 + 0.15765107 * I,
+    0.96578828 + 0.10728867 * I, 0.97968559 + 0.08278728 * I,
+};
+
+dblz F(dbl x) {
+  if (x < 0.0) {
+    // bad things. Need to implement conjugation
+    return -1.0;
+  }
+
+  if (x < 0.3) {
+    return (sqrt(JMM_PI * x) - 2 * x * cexp(I * (JMM_PI / 4)) -
+            (2 / 3) * pow(x, 2) * cexp(-I * (JMM_PI / 4))) *
+           cexp(I * (JMM_PI / 4)) * cexp(I * x);
+  } else if (x >= 0.3 && x <= 5.5) {
+    return -1.0;
+  } else {
+    // x >> 5.5
+    return -1.0;
+  }
 }
 
 /* Equation (A.6) in Potter et. al 2023
  */
 int N(dbl beta, int n, int sign) {
-    int I0[3] = {-1, 0, 1};
-    dbl min_val = fabs(beta + sign * JMM_PI - 2 * JMM_PI * n * I0[0]);
-    int min_idx = 0;
-    for (int i = 1; i < 3; i++) {
-        dbl val = fabs(beta + sign * JMM_PI - 2 * JMM_PI * n * I0[i]);
-        if (val < min_val) {
-            min_val = val;
-            min_idx = i;
-        }
+  int I0[3] = {-1, 0, 1};
+  dbl min_val = fabs(beta + sign * JMM_PI - 2 * JMM_PI * n * I0[0]);
+  int min_idx = 0;
+  for (int i = 1; i < 3; i++) {
+    dbl val = fabs(beta + sign * JMM_PI - 2 * JMM_PI * n * I0[i]);
+    if (val < min_val) {
+      min_val = val;
+      min_idx = i;
     }
-    return I0[min_idx];
+  }
+  return I0[min_idx];
 }
 
 /* Equation (A.6) in Potter et. al 2023
  */
 dbl a(dbl beta, int n, int sign) {
-    int N_ = N(beta, n, sign);
-    dbl aval = 2 * cos(0.5*(2 * JMM_PI * n * N_ - beta)) * cos(0.5*(2 * JMM_PI * n * N_ - beta));
-    return aval;
+  int N_ = N(beta, n, sign);
+  dbl aval = 2 * cos(0.5 * (2 * JMM_PI * n * N_ - beta)) *
+             cos(0.5 * (2 * JMM_PI * n * N_ - beta));
+  return aval;
 }
 
 dbl phi_in(dbl3 t_in, dbl3 t_e, dbl3 t_o, dbl3 n_o) {
-    dbl3 t_aux; dbl3_dbl_mul(t_e,dbl3_dot(t_in,t_e),t_aux);
-    dbl3 t_in_perp; dbl3_sub(t_in,t_aux,t_in_perp);
-    dbl3_normalize(t_in_perp); // calculate using eqn A.2
-    dbl phi_in = atan2(dbl3_dot(t_in_perp,n_o), dbl3_dot(t_in_perp,t_o));
-    return phi_in;
+  dbl3 t_aux;
+  dbl3_dbl_mul(t_e, dbl3_dot(t_in, t_e), t_aux);
+  dbl3 t_in_perp;
+  dbl3_sub(t_in, t_aux, t_in_perp);
+  dbl3_normalize(t_in_perp); // calculate using eqn A.2
+  dbl phi_in = atan2(dbl3_dot(t_in_perp, n_o), dbl3_dot(t_in_perp, t_o));
+  return phi_in;
 }
 
 dbl phi_out(dbl3 t_out, dbl3 t_e, dbl3 t_o, dbl3 n_o) {
-    dbl3 t_aux; dbl3_dbl_mul(t_e,dbl3_dot(t_out,t_e),t_aux);
-    dbl3 t_out_perp; dbl3_sub(t_out,t_aux,t_out_perp);
-    dbl3_normalize(t_out_perp); // calculate using eqn A.2
-    dbl phi_out = atan2(dbl3_dot(t_out_perp,n_o), dbl3_dot(t_out_perp,t_o));
-    return phi_out;
+  dbl3 t_aux;
+  dbl3_dbl_mul(t_e, dbl3_dot(t_out, t_e), t_aux);
+  dbl3 t_out_perp;
+  dbl3_sub(t_out, t_aux, t_out_perp);
+  dbl3_normalize(t_out_perp); // calculate using eqn A.2
+  dbl phi_out = atan2(dbl3_dot(t_out_perp, n_o), dbl3_dot(t_out_perp, t_o));
+  return phi_out;
 }
 
 /* Equation (A.1) in Potter et. al 2023
  */
 dbl beta(dbl3 t_in, dbl3 t_out, dbl3 t_e, dbl3 t_o, dbl3 n_o, int sign) {
-    if (sign == 1) {
-        return phi_out(t_out, t_e, t_o, n_o) + phi_in(t_in, t_e, t_o, n_o);
-    } else {
-        return phi_out(t_out, t_e, t_o, n_o) - phi_in(t_in, t_e, t_o, n_o);
-    }
+  if (sign == 1) {
+    return phi_out(t_out, t_e, t_o, n_o) + phi_in(t_in, t_e, t_o, n_o);
+  } else {
+    return phi_out(t_out, t_e, t_o, n_o) - phi_in(t_in, t_e, t_o, n_o);
+  }
 }
 
 /* Equation (A.4) in Potter et. al 2023
  */
 dbl L(dbl3 x, dbl3 t_e, dbl3 x_e) {
-    /* dbl rho_diff = dbl3_dist(x,x_e);
-    dbl3 xxe; dbl3_sub(x,x_e,xxe);
-    dbl3 x_proj; dbl3_dbl_mul(t_e, dbl3_dot(t_e, xxe),x_proj);
-    x_proj += x_e;
-    dbl rho_e = dbl3_dist(x,x_proj);
- */
-    return 0.0;
+  /* dbl rho_diff = dbl3_dist(x,x_e);
+  dbl3 xxe; dbl3_sub(x,x_e,xxe);
+  dbl3 x_proj; dbl3_dbl_mul(t_e, dbl3_dot(t_e, xxe),x_proj);
+  x_proj += x_e;
+  dbl rho_e = dbl3_dist(x,x_proj);
+*/
+  return 0.0;
 }
 
 /* Equation (A.9) in Potter et. al 2023
  */
-dbl Di(dbl k, int n, dbl3 t_in, dbl3 t_out, dbl3 t_e, dbl3 t_o, dbl3 n_o, int sign_a, int sign_beta) {
-    dbl beta_ = beta(t_in, t_out, t_e, t_o, n_o, sign_beta);
-    dbl a_ = a(beta_, n, sign_a);
-    dbl dval = -cexp(0.25 * I * JMM_PI) / (2 * n * csqrt(2 * JMM_PI * k) * sin(beta_));
-    dval /= tan((JMM_PI + sign_a * beta_) / (2 * n));
-    // dval *= F(k * L * a_);
-    return dval;
+dbl Di(dbl k, int n, dbl3 t_in, dbl3 t_out, dbl3 t_e, dbl3 t_o, dbl3 n_o,
+       int sign_a, int sign_beta) {
+  dbl beta_ = beta(t_in, t_out, t_e, t_o, n_o, sign_beta);
+  dbl a_ = a(beta_, n, sign_a);
+  dbl dval =
+      -cexp(0.25 * I * JMM_PI) / (2 * n * csqrt(2 * JMM_PI * k) * sin(beta_));
+  dval /= tan((JMM_PI + sign_a * beta_) / (2 * n));
+  // dval *= F(k * L * a_);
+  return dval;
 }
 
 /* Equation (A.8) in Potter et. al 2023
  */
-dbl D(dbl3 x, dbl refl_coef, dbl k, int n, dbl3 t_in, dbl3 t_out, dbl3 t_e, dbl3 t_o, dbl3 n_o, int sign_a, int sign_beta) {
-    dblz D1 = Di(k, n, t_in, t_out, t_e, t_o, n_o, 1, -1);
-    dblz D2 = Di(k, n, t_in, t_out, t_e, t_o, n_o, -1, -1);
-    dblz D3 = Di(k, n, t_in, t_out, t_e, t_o, n_o, 1, 1);
-    dblz D4 = Di(k, n, t_in, t_out, t_e, t_o, n_o, -1, 1);
+dbl D(dbl3 x, dbl refl_coef, dbl k, int n, dbl3 t_in, dbl3 t_out, dbl3 t_e,
+      dbl3 t_o, dbl3 n_o, int sign_a, int sign_beta) {
+  dblz D1 = Di(k, n, t_in, t_out, t_e, t_o, n_o, 1, -1);
+  dblz D2 = Di(k, n, t_in, t_out, t_e, t_o, n_o, -1, -1);
+  dblz D3 = Di(k, n, t_in, t_out, t_e, t_o, n_o, 1, 1);
+  dblz D4 = Di(k, n, t_in, t_out, t_e, t_o, n_o, -1, 1);
 
-    return D1 + D2 + refl_coef * (D3 + D4);
+  return D1 + D2 + refl_coef * (D3 + D4);
 }
 
 // def D_from_geometry(k, alpha, no, e, s, sp, t, hess, refl_coef=1):
