@@ -1,11 +1,10 @@
 #include <cgreen/cgreen.h>
-
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_rng.h>
 
 #define NUM_RANDOM_TRIALS 10
 
-#include "bicubic.h"
+#include <jmm/bicubic.h>
 
 Describe(bicubic);
 
@@ -24,30 +23,45 @@ Ensure(bicubic, set_data_works) {
 
   for (int _ = 0; _ < NUM_RANDOM_TRIALS; ++_) {
     for (int i = 0; i < 4; ++i)
-      for (int j = 0; j < 4; ++j)
-        data[i][j] = gsl_ran_gaussian(rng, 1.0);
+      for (int j = 0; j < 4; ++j) data[i][j] = gsl_ran_gaussian(rng, 1.0);
 
     bicubic_set_data(&bicubic, data);
 
-    assert_that_double(bicubic_f(&bicubic, DBL2(0, 0)), is_nearly_double(data[0][0]));
-    assert_that_double(bicubic_f(&bicubic, DBL2(0, 1)), is_nearly_double(data[0][1]));
-    assert_that_double(bicubic_f(&bicubic, DBL2(1, 0)), is_nearly_double(data[1][0]));
-    assert_that_double(bicubic_f(&bicubic, DBL2(1, 1)), is_nearly_double(data[1][1]));
+    assert_that_double(bicubic_f(&bicubic, DBL2(0, 0)),
+                       is_nearly_double(data[0][0]));
+    assert_that_double(bicubic_f(&bicubic, DBL2(0, 1)),
+                       is_nearly_double(data[0][1]));
+    assert_that_double(bicubic_f(&bicubic, DBL2(1, 0)),
+                       is_nearly_double(data[1][0]));
+    assert_that_double(bicubic_f(&bicubic, DBL2(1, 1)),
+                       is_nearly_double(data[1][1]));
 
-    assert_that_double(bicubic_fx(&bicubic, DBL2(0, 0)), is_nearly_double(data[2][0]));
-    assert_that_double(bicubic_fx(&bicubic, DBL2(0, 1)), is_nearly_double(data[2][1]));
-    assert_that_double(bicubic_fx(&bicubic, DBL2(1, 0)), is_nearly_double(data[3][0]));
-    assert_that_double(bicubic_fx(&bicubic, DBL2(1, 1)), is_nearly_double(data[3][1]));
+    assert_that_double(bicubic_fx(&bicubic, DBL2(0, 0)),
+                       is_nearly_double(data[2][0]));
+    assert_that_double(bicubic_fx(&bicubic, DBL2(0, 1)),
+                       is_nearly_double(data[2][1]));
+    assert_that_double(bicubic_fx(&bicubic, DBL2(1, 0)),
+                       is_nearly_double(data[3][0]));
+    assert_that_double(bicubic_fx(&bicubic, DBL2(1, 1)),
+                       is_nearly_double(data[3][1]));
 
-    assert_that_double(bicubic_fy(&bicubic, DBL2(0, 0)), is_nearly_double(data[0][2]));
-    assert_that_double(bicubic_fy(&bicubic, DBL2(0, 1)), is_nearly_double(data[0][3]));
-    assert_that_double(bicubic_fy(&bicubic, DBL2(1, 0)), is_nearly_double(data[1][2]));
-    assert_that_double(bicubic_fy(&bicubic, DBL2(1, 1)), is_nearly_double(data[1][3]));
+    assert_that_double(bicubic_fy(&bicubic, DBL2(0, 0)),
+                       is_nearly_double(data[0][2]));
+    assert_that_double(bicubic_fy(&bicubic, DBL2(0, 1)),
+                       is_nearly_double(data[0][3]));
+    assert_that_double(bicubic_fy(&bicubic, DBL2(1, 0)),
+                       is_nearly_double(data[1][2]));
+    assert_that_double(bicubic_fy(&bicubic, DBL2(1, 1)),
+                       is_nearly_double(data[1][3]));
 
-    assert_that_double(bicubic_fxy(&bicubic, DBL2(0, 0)), is_nearly_double(data[2][2]));
-    assert_that_double(bicubic_fxy(&bicubic, DBL2(0, 1)), is_nearly_double(data[2][3]));
-    assert_that_double(bicubic_fxy(&bicubic, DBL2(1, 0)), is_nearly_double(data[3][2]));
-    assert_that_double(bicubic_fxy(&bicubic, DBL2(1, 1)), is_nearly_double(data[3][3]));
+    assert_that_double(bicubic_fxy(&bicubic, DBL2(0, 0)),
+                       is_nearly_double(data[2][2]));
+    assert_that_double(bicubic_fxy(&bicubic, DBL2(0, 1)),
+                       is_nearly_double(data[2][3]));
+    assert_that_double(bicubic_fxy(&bicubic, DBL2(1, 0)),
+                       is_nearly_double(data[3][2]));
+    assert_that_double(bicubic_fxy(&bicubic, DBL2(1, 1)),
+                       is_nearly_double(data[3][3]));
   }
 
   gsl_rng_free(rng);
@@ -62,8 +76,7 @@ Ensure(bicubic, get_f_on_edge_works) {
 
   for (int _ = 0; _ < NUM_RANDOM_TRIALS; ++_) {
     for (int i = 0; i < 4; ++i)
-      for (int j = 0; j < 4; ++j)
-        bicubic.A[i][j] = gsl_ran_gaussian(rng, 1.0);
+      for (int j = 0; j < 4; ++j) bicubic.A[i][j] = gsl_ran_gaussian(rng, 1.0);
 
     cubic = bicubic_get_f_on_edge(&bicubic, LAMBDA, 0);
     for (int __ = 0; __ < NUM_RANDOM_TRIALS; ++__) {
@@ -110,8 +123,7 @@ Ensure(bicubic, get_fx_on_edge_works) {
 
   for (int _ = 0; _ < NUM_RANDOM_TRIALS; ++_) {
     for (int i = 0; i < 4; ++i)
-      for (int j = 0; j < 4; ++j)
-        bicubic.A[i][j] = gsl_ran_gaussian(rng, 1.0);
+      for (int j = 0; j < 4; ++j) bicubic.A[i][j] = gsl_ran_gaussian(rng, 1.0);
 
     cubic = bicubic_get_fx_on_edge(&bicubic, LAMBDA, 0);
     for (int __ = 0; __ < NUM_RANDOM_TRIALS; ++__) {
@@ -158,8 +170,7 @@ Ensure(bicubic, get_fy_on_edge_works) {
 
   for (int _ = 0; _ < NUM_RANDOM_TRIALS; ++_) {
     for (int i = 0; i < 4; ++i)
-      for (int j = 0; j < 4; ++j)
-        bicubic.A[i][j] = gsl_ran_gaussian(rng, 1.0);
+      for (int j = 0; j < 4; ++j) bicubic.A[i][j] = gsl_ran_gaussian(rng, 1.0);
 
     cubic = bicubic_get_fy_on_edge(&bicubic, LAMBDA, 0);
     for (int __ = 0; __ < NUM_RANDOM_TRIALS; ++__) {

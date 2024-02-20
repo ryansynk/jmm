@@ -1,7 +1,6 @@
 #include <cgreen/cgreen.h>
-
-#include "geom.h"
-#include "vec.h"
+#include <jmm/geom.h>
+#include <jmm/vec.h>
 
 Describe(geom);
 
@@ -13,14 +12,7 @@ BeforeEach(geom) {
 AfterEach(geom) {}
 
 Ensure(geom, tetra3_contains_point_works) {
-  tetra3 tetra = {
-    .v = {
-      {0, 0, 0},
-      {0, 1, 1},
-      {1, 0, 1},
-      {1, 1, 0}
-    }
-  };
+  tetra3 tetra = {.v = {{0, 0, 0}, {0, 1, 1}, {1, 0, 1}, {1, 1, 0}}};
 
   assert_false(tetra3_contains_point(&tetra, DBL3(-1, -1, -1), NULL));
   assert_that(tetra3_contains_point(&tetra, DBL3(0.5, 0.5, 0.5), NULL));
@@ -32,51 +24,29 @@ Ensure(geom, ray3_intersects_tetra3_works) {
   bool hit;
   dbl t;
 
-  tetra = (tetra3) {
-    .v = {
-      {0, 0, 0},
-      {1, 0, 0},
-      {0, 1, 0},
-      {0, 0, 1}
-    }
-  };
+  tetra = (tetra3){.v = {{0, 0, 0}, {1, 0, 0}, {0, 1, 0}, {0, 0, 1}}};
 
-  ray = (ray3) {
-    .org = {1, 1, 1},
-    .dir = {-1/SQRT3, -1/SQRT3, -1/SQRT3}
-  };
+  ray = (ray3){.org = {1, 1, 1}, .dir = {-1 / SQRT3, -1 / SQRT3, -1 / SQRT3}};
   hit = ray3_intersects_tetra3(&ray, &tetra, &t);
   assert_that(hit);
-  assert_that_double(t, is_nearly_double(SQRT3 - 1/SQRT3));
+  assert_that_double(t, is_nearly_double(SQRT3 - 1 / SQRT3));
 
-  ray = (ray3) {
-    .org = {0, 0, 0},
-    .dir = {1, 0, 0}
-  };
+  ray = (ray3){.org = {0, 0, 0}, .dir = {1, 0, 0}};
   hit = ray3_intersects_tetra3(&ray, &tetra, &t);
   assert_that(hit);
   assert_that_double(t, is_nearly_double(0));
 
-  ray = (ray3) {
-    .org = {2, 0, 0},
-    .dir = {-1, 0, 0}
-  };
+  ray = (ray3){.org = {2, 0, 0}, .dir = {-1, 0, 0}};
   hit = ray3_intersects_tetra3(&ray, &tetra, &t);
   assert_that(hit);
   assert_that_double(t, is_nearly_double(1));
 
-  ray = (ray3) {
-    .org = {0, 2, 0},
-    .dir = {0, -1, 0}
-  };
+  ray = (ray3){.org = {0, 2, 0}, .dir = {0, -1, 0}};
   hit = ray3_intersects_tetra3(&ray, &tetra, &t);
   assert_that(hit);
   assert_that_double(t, is_nearly_double(1));
 
-  ray = (ray3) {
-    .org = {0, 0, 2},
-    .dir = {0, 0, -1}
-  };
+  ray = (ray3){.org = {0, 0, 2}, .dir = {0, 0, -1}};
   hit = ray3_intersects_tetra3(&ray, &tetra, &t);
   assert_that(hit);
   assert_that_double(t, is_nearly_double(1));
@@ -88,25 +58,16 @@ Ensure(geom, ray3_intersects_tri3_works) {
   bool hit;
   dbl t;
 
-  tri = (tri3) {
-    .v = {
-      {0, 0, 0},
-      {1, 0, 0},
-      {0, 1, 0}
-    }
-  };
+  tri = (tri3){.v = {{0, 0, 0}, {1, 0, 0}, {0, 1, 0}}};
 
-  ray = (ray3) {
-    .org = {0, 0, 1},
-    .dir = {0, 0, -1}
-  };
+  ray = (ray3){.org = {0, 0, 1}, .dir = {0, 0, -1}};
   hit = ray3_intersects_tri3(&ray, &tri, &t);
   assert_that(hit);
   assert_that_double(t, is_nearly_double(1));
 
-  ray = (ray3) {
-    .org = {1./3, 1./3, 0},
-    .dir = {0, 0, 1},
+  ray = (ray3){
+      .org = {1. / 3, 1. / 3, 0},
+      .dir = {0, 0, 1},
   };
   hit = ray3_intersects_tri3(&ray, &tri, &t);
   assert_that(hit);

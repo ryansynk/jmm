@@ -1,6 +1,5 @@
 #include <cgreen/cgreen.h>
-
-#include "mat.h"
+#include <mat.h>
 
 Describe(dbl22);
 

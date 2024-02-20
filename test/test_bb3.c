@@ -1,10 +1,8 @@
 #include <cgreen/cgreen.h>
-
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_rng.h>
-
-#include "bb.h"
-#include "vec.h"
+#include <jmm/bb.h>
+#include <jmm/vec.h>
 
 #define NUM_RANDOM_TRIALS 10
 
@@ -17,16 +15,13 @@ BeforeEach(bb31) {
 
 AfterEach(bb31) {}
 
-Ensure (bb31, has_quadratic_precision) {
+Ensure(bb31, has_quadratic_precision) {
   gsl_rng *rng = gsl_rng_alloc(gsl_rng_mt19937);
 
   /**
    * Endpoints of interval in original domain.
    */
-  dbl x[2] = {
-    gsl_ran_gaussian(rng, 1.0),
-    gsl_ran_gaussian(rng, 1.0)
-  };
+  dbl x[2] = {gsl_ran_gaussian(rng, 1.0), gsl_ran_gaussian(rng, 1.0)};
 
   /**
    * Coefficients of quadratic.
@@ -38,8 +33,8 @@ Ensure (bb31, has_quadratic_precision) {
   /**
    * Compute Bezier ordinates for interpolant.
    */
-  dbl f[2] = {A*x[0]*x[0] + B*x[0] + C, A*x[1]*x[1] + B*x[1] + C};
-  dbl Df[2] = {2*A*x[0] + B, 2*A*x[1] + B};
+  dbl f[2] = {A * x[0] * x[0] + B * x[0] + C, A * x[1] * x[1] + B * x[1] + C};
+  dbl Df[2] = {2 * A * x[0] + B, 2 * A * x[1] + B};
   bb31 bb;
   bb31_init_from_1d_data(&bb, f, Df, x);
 
@@ -53,14 +48,20 @@ Ensure (bb31, has_quadratic_precision) {
     b[1] = 1 - b[0];
     y = dbl2_dot(b, x);
 
-    f_gt = A*y*y + B*y + C;
+    f_gt = A * y * y + B * y + C;
     f_bb = bb31_f(&bb, b);
     assert_that_double(f_gt, is_nearly_double(f_bb));
 
-    Df_gt = 2*A*y + B;
-    Df_bb = bb31_df(&bb, b, a)/(x[1] - x[0]);
+    Df_gt = 2 * A * y + B;
+    Df_bb = bb31_df(&bb, b, a) / (x[1] - x[0]);
     assert_that_double(Df_gt, is_nearly_double(Df_bb));
   }
 
   gsl_rng_free(rng);
+}
+
+TestSuite *bb3_tests() {
+  TestSuite *suite = create_test_suite();
+  add_test_with_context(suite, bb31, has_quadratic_precision);
+  return suite;
 }

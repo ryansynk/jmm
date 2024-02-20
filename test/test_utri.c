@@ -1,6 +1,5 @@
 #include <cgreen/cgreen.h>
-
-#include "utri.h"
+#include <jmm/utri.h>
 
 Describe(utri);
 
@@ -11,7 +10,7 @@ BeforeEach(utri) {
 
 AfterEach(utri) {}
 
-Ensure (utri, tri11_works) {
+Ensure(utri, tri11_works) {
   dbl x[3] = {1, 1, 0};
   dbl Xt[2][3] = {{1, 0, 0}, {0, 1, 0}};
   dbl jet_data[2][4] = {{1, 1, 0, 0}, {1, 0, 1, 0}};
@@ -20,14 +19,8 @@ Ensure (utri, tri11_works) {
   utri_s *utri;
   utri_alloc(&utri);
 
-  int perm[6][3] = {
-    {0, 1, 2},
-    {0, 2, 1},
-    {1, 0, 2},
-    {2, 0, 1},
-    {1, 2, 0},
-    {2, 1, 0}
-  };
+  int perm[6][3] = {{0, 1, 2}, {0, 2, 1}, {1, 0, 2},
+                    {2, 0, 1}, {1, 2, 0}, {2, 1, 0}};
 
   dbl f, lam;
   dbl const f_gt = 1.4571067811865475;
@@ -48,8 +41,8 @@ Ensure (utri, tri11_works) {
       jet_data_perm[1][1 + j] = jet_data[1][1 + perm[i][j]];
     }
 
-    memcpy(&jet[0], jet_data_perm[0], 4*sizeof(dbl));
-    memcpy(&jet[1], jet_data_perm[1], 4*sizeof(dbl));
+    memcpy(&jet[0], jet_data_perm[0], 4 * sizeof(dbl));
+    memcpy(&jet[1], jet_data_perm[1], 4 * sizeof(dbl));
 
     utri_spec_s spec = utri_spec_from_raw_data(x_perm, Xt_perm, jet);
     utri_init(utri, &spec);

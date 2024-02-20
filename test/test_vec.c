@@ -1,9 +1,7 @@
 #include <cgreen/cgreen.h>
-
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_rng.h>
-
-#include "vec.h"
+#include <jmm/vec.h>
 
 #define NUM_RANDOM_TRIALS 10
 
@@ -23,20 +21,13 @@ Ensure(vec, dblN_nsum_extreme_example_works) {
 }
 
 Ensure(vec, dblN_nsum_works_on_bad_bb32_df_example) {
-  dbl x[3] = {
-    -0.055555555577250698,
-    -1.0847586719884042E-11,
-     0.055555555523012758
-  };
-  int perm[6][3] = {
-    {0, 1, 2}, {0, 2, 1},
-    {1, 0, 2}, {2, 0, 1},
-    {1, 2, 0}, {2, 1, 0}
-  };
+  dbl x[3] = {-0.055555555577250698, -1.0847586719884042E-11,
+              0.055555555523012758};
+  int perm[6][3] = {{0, 1, 2}, {0, 2, 1}, {1, 0, 2},
+                    {2, 0, 1}, {1, 2, 0}, {2, 1, 0}};
   dbl xperm[3], nsum[6];
   for (int i = 0; i < 6; ++i) {
-    for (int j = 0; j < 3; ++j)
-      xperm[j] = x[perm[i][j]];
+    for (int j = 0; j < 3; ++j) xperm[j] = x[perm[i][j]];
     nsum[i] = dblN_nsum(xperm, 3);
   }
   // Assert that all six of these summations are *exactly* equal to
@@ -51,21 +42,11 @@ Ensure(vec, dblN_nsum_works_on_bad_bb32_df_example) {
 }
 
 Ensure(vec, dblN_ndot_works_on_bad_bb32_df_example) {
-  dbl x[3] = {
-    -0.16666666669920935,
-     0.16666666663412383,
-    -3.2542760153297934E-11
-  };
-  dbl y[3] = {
-    0.33333333339841881,
-    0.33333333320316222,
-    0.33333333339841892
-  };
-  int perm[6][3] = {
-    {0, 1, 2}, {0, 2, 1},
-    {1, 0, 2}, {2, 0, 1},
-    {1, 2, 0}, {2, 1, 0}
-  };
+  dbl x[3] = {-0.16666666669920935, 0.16666666663412383,
+              -3.2542760153297934E-11};
+  dbl y[3] = {0.33333333339841881, 0.33333333320316222, 0.33333333339841892};
+  int perm[6][3] = {{0, 1, 2}, {0, 2, 1}, {1, 0, 2},
+                    {2, 0, 1}, {1, 2, 0}, {2, 1, 0}};
   dbl xperm[3], yperm[3], ndot[6];
   for (int i = 0; i < 6; ++i) {
     for (int j = 0; j < 3; ++j) {

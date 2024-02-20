@@ -1,13 +1,11 @@
+#include <bb.h>
 #include <cgreen/cgreen.h>
-
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_rng.h>
-
-#include "bb.h"
-#include "macros.h"
-#include "mat.h"
-#include "util.h"
-#include "vec.h"
+#include <macros.h>
+#include <mat.h>
+#include <util.h>
+#include <vec.h>
 
 #define NUM_RANDOM_TRIALS 10
 
@@ -23,19 +21,17 @@ void get_random_lambda(gsl_rng *rng, dbl lam[3]) {
 
 void get_random_affine_coefs(gsl_rng *rng, dbl a[3]) {
   /* Sample a standard normal Gaussian vector */
-  for (size_t i = 0; i < 3; ++i)
-    a[i] = gsl_ran_gaussian(rng, 1.0);
+  for (size_t i = 0; i < 3; ++i) a[i] = gsl_ran_gaussian(rng, 1.0);
 
   /* Project it into the orthogonal complement of the span of the
    * vector (1, 1, 1). */
-  dbl shift = dbl3_sum(a)/3;
-  for (size_t i = 0; i < 3; ++i)
-    a[i] -= shift;
+  dbl shift = dbl3_sum(a) / 3;
+  for (size_t i = 0; i < 3; ++i) a[i] -= shift;
 }
 
 void get_conv_comb(dbl const x[3][3], dbl const lam[3], dbl y[3]) {
   for (int i = 0; i < 3; ++i) {
-    y[i] = x[0][i]*lam[0] + x[1][i]*lam[1] + x[2][i]*lam[2];
+    y[i] = x[0][i] * lam[0] + x[1][i] * lam[1] + x[2][i] * lam[2];
   }
 }
 
@@ -48,7 +44,7 @@ BeforeEach(bb32) {
 
 AfterEach(bb32) {}
 
-Ensure (bb32, has_linear_precision) {
+Ensure(bb32, has_linear_precision) {
   gsl_rng *rng = gsl_rng_alloc(gsl_rng_mt19937);
 
   /**
@@ -69,11 +65,8 @@ Ensure (bb32, has_linear_precision) {
     }
   }
 
-  dbl f[3] = {
-    dbl3_dot(A, x[0]) + B,
-    dbl3_dot(A, x[1]) + B,
-    dbl3_dot(A, x[2]) + B
-  };
+  dbl f[3] = {dbl3_dot(A, x[0]) + B, dbl3_dot(A, x[1]) + B,
+              dbl3_dot(A, x[2]) + B};
 
   dbl Df[3][3];
   for (int i = 0; i < 3; ++i) {
@@ -96,7 +89,7 @@ Ensure (bb32, has_linear_precision) {
   }
 }
 
-Ensure (bb32, has_quadratic_precision) {
+Ensure(bb32, has_quadratic_precision) {
   gsl_rng *rng = gsl_rng_alloc(gsl_rng_mt19937);
 
   /**
@@ -128,11 +121,7 @@ Ensure (bb32, has_quadratic_precision) {
   dbl3_sub(x[1], x[0], dx[0]);
   dbl3_sub(x[2], x[0], dx[1]);
 
-  dbl f[3] = {
-    q(A, b, d, x[0]),
-    q(A, b, d, x[1]),
-    q(A, b, d, x[2])
-  };
+  dbl f[3] = {q(A, b, d, x[0]), q(A, b, d, x[1]), q(A, b, d, x[2])};
 
   dbl Df[3][3];
   for (int i = 0; i < 3; ++i) {
@@ -142,10 +131,7 @@ Ensure (bb32, has_quadratic_precision) {
   bb32 bb;
   bb32_init_from_3d_data(&bb, f, Df, x);
 
-  dbl a[2][3] = {
-    {-1, 1, 0},
-    {-1, 0, 1}
-  };
+  dbl a[2][3] = {{-1, 1, 0}, {-1, 0, 1}};
 
   dbl lam[3];
   dbl q_gt, q_bb, tmp[3], Dq_gt[2], Dq_bb[2];
@@ -220,32 +206,19 @@ Ensure (bb32, has_quadratic_precision) {
 Ensure(bb32, works_for_simple_olim6_update) {
   dbl f[3] = {1, 1, 1};
 
-  dbl Df[3][3] = {
-    {1, 0, 0},
-    {0, 1, 0},
-    {0, 0, 1}
-  };
+  dbl Df[3][3] = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
 
-  dbl x[3][3] = {
-    {1, 0, 0},
-    {0, 1, 0},
-    {0, 0, 1}
-  };
+  dbl x[3][3] = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
 
   dbl dx[2][3];
   dbl3_sub(x[1], x[0], dx[0]);
   dbl3_sub(x[2], x[0], dx[1]);
 
-  dbl a[2][3] = {
-    {-1, 1, 0},
-    {-1, 0, 1}
-  };
+  dbl a[2][3] = {{-1, 1, 0}, {-1, 0, 1}};
 
-  dbl Dfa[3][2] = {
-    {dbl3_dot(dx[0], Df[0]), dbl3_dot(dx[1], Df[0])},
-    {dbl3_dot(dx[0], Df[1]), dbl3_dot(dx[1], Df[1])},
-    {dbl3_dot(dx[0], Df[2]), dbl3_dot(dx[1], Df[2])}
-  };
+  dbl Dfa[3][2] = {{dbl3_dot(dx[0], Df[0]), dbl3_dot(dx[1], Df[0])},
+                   {dbl3_dot(dx[0], Df[1]), dbl3_dot(dx[1], Df[1])},
+                   {dbl3_dot(dx[0], Df[2]), dbl3_dot(dx[1], Df[2])}};
 
   bb32 bb;
   bb32_init_from_3d_data(&bb, f, Df, x);
@@ -275,12 +248,10 @@ Ensure(bb32, works_for_simple_olim6_update) {
 Ensure(bb32, df_is_symmetric) {
   gsl_rng *rng = gsl_rng_alloc(gsl_rng_mt19937);
 
-  bb32 bb = {
-    .c = {
-      1, 0.66666666666666674, 0.66666666666666674, 1, 0.66666666666666674,
-      0.50000000000000022, 0.66666666666666674, 0.66666666666666674,
-      0.66666666666666674, 1}
-  };
+  bb32 bb = {.c = {1, 0.66666666666666674, 0.66666666666666674, 1,
+                   0.66666666666666674, 0.50000000000000022,
+                   0.66666666666666674, 0.66666666666666674,
+                   0.66666666666666674, 1}};
 
   dbl b[3], df[2], a[2][3] = {{-1, 1, 0}, {-1, 0, 1}};
 
@@ -309,48 +280,34 @@ Ensure(bb32, df_is_symmetric) {
 
 Ensure(bb32, adjacent_bb32_are_C0) {
   jet3 jet1[3] = {
-    {
-      .f = 6.0515782990567839,
-      .Df = {0.10494745590458605, -0.12623235128221608, -0.98643369011247684}
-    },
-    {
-      .f = 5.9505211776379818, .Df = {NAN, NAN, NAN}
-    },
-    {
-      .f = 5.7756471295123735,
-      .Df = {0.30240346235068588, 0.014147977152708482, -0.95307501315521004}
-    }
-  };
+      {.f = 6.0515782990567839,
+       .Df = {0.10494745590458605, -0.12623235128221608, -0.98643369011247684}},
+      {.f = 5.9505211776379818, .Df = {NAN, NAN, NAN}},
+      {.f = 5.7756471295123735,
+       .Df = {0.30240346235068588, 0.014147977152708482,
+              -0.95307501315521004}}};
 
   dbl x1[3][3] = {
-    {1.3604636896622806, 2.8496775671458718, -5.1111864057935801},
-    {1, 3.5, -5.1999988555908203},
-    {1.4641119106968401, 3.4797503769549065, -4.8855490197739462}
-  };
+      {1.3604636896622806, 2.8496775671458718, -5.1111864057935801},
+      {1, 3.5, -5.1999988555908203},
+      {1.4641119106968401, 3.4797503769549065, -4.8855490197739462}};
 
   bb32 bb1;
   bb32_init_from_jets(&bb1, jet1, x1);
 
   jet3 jet2[3] = {
-    {
-      .f = 6.0515782990567839,
-      .Df = {0.10494745590458605, -0.12623235128221608, -0.98643369011247684}
-    },
-    {
-      .f = 5.8776740144675363,
-      .Df = {0.42650997855742201, -0.23420586793585149, -0.87363427680887262}
-    },
-    {
-      .f = 5.7756471295123735,
-      .Df = {0.30240346235068588, 0.014147977152708482, -0.95307501315521004}
-    }
-  };
+      {.f = 6.0515782990567839,
+       .Df = {0.10494745590458605, -0.12623235128221608, -0.98643369011247684}},
+      {.f = 5.8776740144675363,
+       .Df = {0.42650997855742201, -0.23420586793585149, -0.87363427680887262}},
+      {.f = 5.7756471295123735,
+       .Df = {0.30240346235068588, 0.014147977152708482,
+              -0.95307501315521004}}};
 
   dbl x2[3][3] = {
-    {1.3604636896622806, 2.8496775671458718, -5.1111864057935801},
-    {2.0820123257785261, 2.9290136105001272, -4.6698515448704896},
-    {1.4641119106968401, 3.4797503769549065, -4.8855490197739462}
-  };
+      {1.3604636896622806, 2.8496775671458718, -5.1111864057935801},
+      {2.0820123257785261, 2.9290136105001272, -4.6698515448704896},
+      {1.4641119106968401, 3.4797503769549065, -4.8855490197739462}};
 
   bb32 bb2;
   bb32_init_from_jets(&bb2, jet2, x2);
@@ -386,16 +343,13 @@ Ensure(bb32, init_from_3d_data_and_init_from_jets_are_equivalent) {
   dbl f_from_jets, df_from_jets, d2f_from_jets;
 
   for (size_t _ = 0; _ < NUM_RANDOM_TRIALS; ++_) {
-    for (size_t i = 0; i < 3; ++i)
-      T[i] = gsl_ran_gaussian(rng, 1.0);
+    for (size_t i = 0; i < 3; ++i) T[i] = gsl_ran_gaussian(rng, 1.0);
 
     for (size_t i = 0; i < 3; ++i)
-      for (size_t j = 0; j < 3; ++j)
-        DT[i][j] = gsl_ran_gaussian(rng, 1.0);
+      for (size_t j = 0; j < 3; ++j) DT[i][j] = gsl_ran_gaussian(rng, 1.0);
 
     for (size_t i = 0; i < 3; ++i)
-      for (size_t j = 0; j < 3; ++j)
-        x[i][j] = gsl_ran_gaussian(rng, 1.0);
+      for (size_t j = 0; j < 3; ++j) x[i][j] = gsl_ran_gaussian(rng, 1.0);
 
     for (size_t i = 0; i < 3; ++i) {
       jet[i].f = T[i];

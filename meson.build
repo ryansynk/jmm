@@ -18,6 +18,7 @@ argp_dep = meson.get_compiler('c').find_library('argp', required : false)
 gsl_dep = dependency('gsl')
 openmp_dep = dependency('openmp')
 tetgen_dep = dependency('tetgen')
+cgreen_dep = dependency('cgreen')
 
 jmm_lib_src = [
   'src/alist.c',
@@ -91,3 +92,4 @@ jmm_dep = declare_dependency(link_with : jmm_lib, include_directories : jmm_inc)
 
 subdir('examples')
 subdir('wrappers')
+subdir('test')

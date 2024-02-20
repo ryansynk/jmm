@@ -1,15 +1,12 @@
 #include <cgreen/cgreen.h>
-
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_rng.h>
-
+#include <jmm/eik3.h>
+#include <jmm/mesh3.h>
+#include <jmm/utetra.h>
+#include <jmm/vec.h>
 #include <math.h>
 #include <string.h>
-
-#include "eik3.h"
-#include "mesh3.h"
-#include "utetra.h"
-#include "vec.h"
 
 #define NUM_RANDOM_TRIALS 10
 
@@ -36,40 +33,28 @@ Ensure(eik3, tetra_works_for_olim18_122_update) {
   dbl xsrc[3] = {0, 0, 0};
 
   dbl verts[12] = {
-    1, 0, 0, // x0
-    0, 1, 0, // x1
-    1, 1, 0, // x2
-    1, 1, 1  // xhat
+      1, 0, 0,  // x0
+      0, 1, 0,  // x1
+      1, 1, 0,  // x2
+      1, 1, 1   // xhat
   };
 
   jet3 newjet, jet[3];
 
-  int perm[6][3] = {
-    {0, 1, 2},
-    {0, 2, 1},
-    {1, 0, 2},
-    {2, 0, 1},
-    {1, 2, 0},
-    {2, 1, 0}
-  };
+  int perm[6][3] = {{0, 1, 2}, {0, 2, 1}, {1, 0, 2},
+                    {2, 0, 1}, {1, 2, 0}, {2, 1, 0}};
 
   dbl verts_perm[12];
   size_t cells_perm[4];
 
   // Last vertex stays fixed under permutation
   cells_perm[3] = 3;
-  memcpy((void *)&verts_perm[9], (void *)&verts[9], sizeof(dbl)*3);
+  memcpy((void *)&verts_perm[9], (void *)&verts[9], sizeof(dbl) * 3);
 
   dbl lam[2];
 
-  dbl lam_gt[6][2] = {
-    {0.5, 0.0},
-    {0.0, 0.5},
-    {0.5, 0.0},
-    {0.5, 0.5},
-    {0.0, 0.5},
-    {0.5, 0.5}
-  };
+  dbl lam_gt[6][2] = {{0.5, 0.0}, {0.0, 0.5}, {0.5, 0.0},
+                      {0.5, 0.5}, {0.0, 0.5}, {0.5, 0.5}};
 
   dbl lam_verts[3][2] = {{0, 0}, {1, 0}, {0, 1}};
 
@@ -88,7 +73,8 @@ Ensure(eik3, tetra_works_for_olim18_122_update) {
      */
     for (int j = 0; j < 3; ++j) {
       cells_perm[j] = p = perm[i][j];
-      memcpy((void *)&verts_perm[3*j], (void *)&verts[3*p], sizeof(dbl)*3);
+      memcpy((void *)&verts_perm[3 * j], (void *)&verts[3 * p],
+             sizeof(dbl) * 3);
     }
 
     /**
@@ -100,7 +86,7 @@ Ensure(eik3, tetra_works_for_olim18_122_update) {
      * Get jets for vertex data
      */
     for (int j = 0; j < 3; ++j) {
-      get_gt_jet(xsrc, &verts_perm[3*j],  &jet[j]);
+      get_gt_jet(xsrc, &verts_perm[3 * j], &jet[j]);
     }
 
     spec = utetra_spec_from_ptrs(mesh, jet, 3, 0, 1, 2);
@@ -112,7 +98,7 @@ Ensure(eik3, tetra_works_for_olim18_122_update) {
      */
     for (int j = 0; j < 3; ++j) {
       utetra_set_lambda(cf, lam_verts[perm[i][j]]);
-      dbl L = dbl3_dist(&verts_perm[3*j], &verts[9]);
+      dbl L = dbl3_dist(&verts_perm[3 * j], &verts[9]);
       dbl f = jet[j].f + L;
       assert_that_double(utetra_get_value(cf), is_nearly_double(f));
     }
@@ -163,32 +149,29 @@ Ensure(eik3, tetra_works_for_olim18_222_update) {
   gsl_rng *rng = gsl_rng_alloc(gsl_rng_mt19937);
 
   dbl verts[12] = {
-    1, 0, 0, // x0
-    0, 1, 0, // x1
-    0, 0, 1, // x2
-    1, 1, 1  // xhat
+      1, 0, 0,  // x0
+      0, 1, 0,  // x1
+      0, 0, 1,  // x2
+      1, 1, 1   // xhat
   };
 
   size_t cells[4] = {0, 1, 2, 3};
 
-  jet3 jet[3] = {
-    {.f = 1, .Df = {1, 0, 0}},
-    {.f = 1, .Df = {0, 1, 0}},
-    {.f = 1, .Df = {0, 0, 1}}
-  };
+  jet3 jet[3] = {{.f = 1, .Df = {1, 0, 0}},
+                 {.f = 1, .Df = {0, 1, 0}},
+                 {.f = 1, .Df = {0, 0, 1}}};
 
   mesh3_s *mesh;
   mesh3_alloc(&mesh);
   mesh3_init(mesh, verts, 4, cells, 1, true, NULL);
 
-  dbl lambda[2] = {1./3, 1./3};
+  dbl lambda[2] = {1. / 3, 1. / 3};
 
   jet3 newjet;
 
   jet3 const jet_gt = {
-    .f = 1.821367205045918,
-    .Df = {0.57735026918962551, 0.57735026918962551, 0.57735026918962551}
-  };
+      .f = 1.821367205045918,
+      .Df = {0.57735026918962551, 0.57735026918962551, 0.57735026918962551}};
 
   utetra_s *cf;
   utetra_alloc(&cf);
@@ -199,8 +182,8 @@ Ensure(eik3, tetra_works_for_olim18_222_update) {
 
   utetra_solve(cf, lambda);
   utetra_get_jet(cf, &newjet);
-  assert_that_double(lambda[0], is_nearly_double(1./3));
-  assert_that_double(lambda[0], is_nearly_double(1./3));
+  assert_that_double(lambda[0], is_nearly_double(1. / 3));
+  assert_that_double(lambda[0], is_nearly_double(1. / 3));
   assert_that_double(jet_gt.f, is_nearly_double(newjet.f));
   assert_that_double(jet_gt.Df[0], is_nearly_double(newjet.Df[0]));
   assert_that_double(jet_gt.Df[1], is_nearly_double(newjet.Df[1]));
@@ -212,8 +195,8 @@ Ensure(eik3, tetra_works_for_olim18_222_update) {
   utetra_solve(cf, lambda);
   utetra_get_lambda(cf, lambda);
   utetra_get_jet(cf, &newjet);
-  assert_that_double(lambda[0], is_nearly_double(1./3));
-  assert_that_double(lambda[1], is_nearly_double(1./3));
+  assert_that_double(lambda[0], is_nearly_double(1. / 3));
+  assert_that_double(lambda[1], is_nearly_double(1. / 3));
   assert_that_double(jet_gt.f, is_nearly_double(newjet.f));
   assert_that_double(jet_gt.Df[0], is_nearly_double(newjet.Df[0]));
   assert_that_double(jet_gt.Df[1], is_nearly_double(newjet.Df[1]));
@@ -225,8 +208,8 @@ Ensure(eik3, tetra_works_for_olim18_222_update) {
   utetra_solve(cf, lambda);
   utetra_get_lambda(cf, lambda);
   utetra_get_jet(cf, &newjet);
-  assert_that_double(lambda[0], is_nearly_double(1./3));
-  assert_that_double(lambda[1], is_nearly_double(1./3));
+  assert_that_double(lambda[0], is_nearly_double(1. / 3));
+  assert_that_double(lambda[1], is_nearly_double(1. / 3));
   assert_that_double(jet_gt.f, is_nearly_double(newjet.f));
   assert_that_double(jet_gt.Df[0], is_nearly_double(newjet.Df[0]));
   assert_that_double(jet_gt.Df[1], is_nearly_double(newjet.Df[1]));
@@ -238,8 +221,8 @@ Ensure(eik3, tetra_works_for_olim18_222_update) {
   utetra_solve(cf, lambda);
   utetra_get_lambda(cf, lambda);
   utetra_get_jet(cf, &newjet);
-  assert_that_double(lambda[0], is_nearly_double(1./3));
-  assert_that_double(lambda[1], is_nearly_double(1./3));
+  assert_that_double(lambda[0], is_nearly_double(1. / 3));
+  assert_that_double(lambda[1], is_nearly_double(1. / 3));
   assert_that_double(jet_gt.f, is_nearly_double(newjet.f));
   assert_that_double(jet_gt.Df[0], is_nearly_double(newjet.Df[0]));
   assert_that_double(jet_gt.Df[1], is_nearly_double(newjet.Df[1]));
@@ -258,8 +241,8 @@ Ensure(eik3, tetra_works_for_olim18_222_update) {
     utetra_get_lambda(cf, lambda);
     utetra_get_jet(cf, &newjet);
 
-    assert_that_double(lambda[0], is_nearly_double(1./3));
-    assert_that_double(lambda[1], is_nearly_double(1./3));
+    assert_that_double(lambda[0], is_nearly_double(1. / 3));
+    assert_that_double(lambda[1], is_nearly_double(1. / 3));
 
     assert_that(utetra_get_num_iter(cf), is_less_than(10));
   }
@@ -275,18 +258,18 @@ Ensure(eik3, tetra_works_for_olim18_222_update) {
 
 Ensure(eik3, olim18_222_is_symmetric) {
   dbl verts[12] = {
-    1, 0, 0, // x0
-    0, 1, 0, // x1
-    0, 0, 1, // x2
-    1, 1, 1  // xhat
+      1, 0, 0,  // x0
+      0, 1, 0,  // x1
+      0, 0, 1,  // x2
+      1, 1, 1   // xhat
   };
 
   size_t cells[4] = {0, 1, 2, 3};
 
   jet3 jet[3] = {
-    {.f = 1, .Df = {1, 0, 0}},
-    {.f = 1, .Df = {0, 1, 0}},
-    {.f = 1, .Df = {0, 0, 1}},
+      {.f = 1, .Df = {1, 0, 0}},
+      {.f = 1, .Df = {0, 1, 0}},
+      {.f = 1, .Df = {0, 0, 1}},
   };
 
   mesh3_s *mesh;
@@ -301,20 +284,18 @@ Ensure(eik3, olim18_222_is_symmetric) {
     utetra_init(cf[i], &spec);
   }
 
-  utetra_set_lambda(cf[0], (dbl[2]) {1, 0});
-  utetra_set_lambda(cf[1], (dbl[2]) {0, 1});
+  utetra_set_lambda(cf[0], (dbl[2]){1, 0});
+  utetra_set_lambda(cf[1], (dbl[2]){0, 1});
 
   dbl lam[2][2];
 
   for (int k = 0; k < 10; ++k) {
-    for (int i = 0; i < 2; ++i)
-      utetra_get_lambda(cf[i], lam[i]);
+    for (int i = 0; i < 2; ++i) utetra_get_lambda(cf[i], lam[i]);
 
     assert_that_double(lam[0][0], is_nearly_double(lam[1][1]));
     assert_that_double(lam[1][0], is_nearly_double(lam[0][1]));
 
-    for (int i = 0; i < 2; ++i)
-      utetra_step(cf[i]);
+    for (int i = 0; i < 2; ++i) utetra_step(cf[i]);
   }
 }
 
@@ -324,42 +305,29 @@ Ensure(eik3, tetra_works_for_olim26_updates) {
   dbl xsrc[3] = {0, 0, 0};
 
   dbl verts[12] = {
-    1, 1, 1, // x0
-    2, 1, 1, // x1
-    2, 2, 1, // x2
-    2, 2, 2  // xhat
+      1, 1, 1,  // x0
+      2, 1, 1,  // x1
+      2, 2, 1,  // x2
+      2, 2, 2   // xhat
   };
 
   dbl3 x, x_gt = {1, 1, 1};
 
   jet3 newjet, jet[3];
 
-  int perm[6][3] = {
-    {0, 1, 2},
-    {0, 2, 1},
-    {1, 0, 2},
-    {2, 0, 1},
-    {1, 2, 0},
-    {2, 1, 0}
-  };
+  int perm[6][3] = {{0, 1, 2}, {0, 2, 1}, {1, 0, 2},
+                    {2, 0, 1}, {1, 2, 0}, {2, 1, 0}};
 
   dbl verts_perm[12];
 
   // Last vertex stays fixed under permutation
-  memcpy((void *)&verts_perm[9], (void *)&verts[9], sizeof(dbl)*3);
+  memcpy((void *)&verts_perm[9], (void *)&verts[9], sizeof(dbl) * 3);
 
   size_t cells[4] = {0, 1, 2, 3};
 
   dbl lam[2];
 
-  dbl lam_gt[6][2] = {
-    {0, 0},
-    {0, 0},
-    {1, 0},
-    {1, 0},
-    {0, 1},
-    {0, 1}
-  };
+  dbl lam_gt[6][2] = {{0, 0}, {0, 0}, {1, 0}, {1, 0}, {0, 1}, {0, 1}};
 
   mesh3_s *mesh;
   mesh3_alloc(&mesh);
@@ -372,7 +340,7 @@ Ensure(eik3, tetra_works_for_olim26_updates) {
      * Get vertices for this permutation
      */
     for (int j = 0; j < 3; ++j)
-      memcpy(&verts_perm[3*j], &verts[3*perm[i][j]], sizeof(dbl3));
+      memcpy(&verts_perm[3 * j], &verts[3 * perm[i][j]], sizeof(dbl3));
 
     /**
      * Create a mesh consisting of a single tetrahedron for this update
@@ -383,7 +351,7 @@ Ensure(eik3, tetra_works_for_olim26_updates) {
      * Get jets for vertex data
      */
     for (int j = 0; j < 3; ++j) {
-      get_gt_jet(xsrc, &verts_perm[3*j],  &jet[j]);
+      get_gt_jet(xsrc, &verts_perm[3 * j], &jet[j]);
     }
 
     utetra_spec_s spec = utetra_spec_from_ptrs(mesh, jet, 3, 0, 1, 2);
@@ -394,8 +362,8 @@ Ensure(eik3, tetra_works_for_olim26_updates) {
      * Verify that cost function has correct nodal values
      */
     for (int j = 0; j < 3; ++j) {
-      utetra_set_lambda(cf, lam_gt[2*j]);
-      dbl L = dbl3_dist(&verts_perm[3*j], &verts[9]);
+      utetra_set_lambda(cf, lam_gt[2 * j]);
+      dbl L = dbl3_dist(&verts_perm[3 * j], &verts[9]);
       dbl f = jet[j].f + L;
       assert_that_double(utetra_get_value(cf), is_nearly_double(f));
     }

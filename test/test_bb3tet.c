@@ -1,29 +1,26 @@
 #include <cgreen/cgreen.h>
-
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_rng.h>
-
-#include "bb.h"
-#include "mat.h"
-#include "util.h"
-#include "vec.h"
+#include <jmm/bb.h>
+#include <jmm/mat.h>
+#include <jmm/util.h>
+#include <jmm/vec.h>
 
 #define NUM_RANDOM_TRIALS 10
 
 void get_random_valid_bary_coord(gsl_rng *rng, dbl b[4]) {
   do {
-    for (int j = 1; j < 4; ++j)
-      b[j] = gsl_ran_flat(rng, 0, 1);
+    for (int j = 1; j < 4; ++j) b[j] = gsl_ran_flat(rng, 0, 1);
     b[0] = 1 - dbl3_sum(&b[1]);
   } while (!dbl4_nonneg(b));
 }
 
-#define SET_UP_RANDOM_CONVEX_COMBINATION()                              \
-  dbl b[4], xb[3];                                                      \
-  get_random_valid_bary_coord(rng, b);                                  \
-  xb[0] = b[0]*x[0][0] + b[1]*x[1][0] + b[2]*x[2][0] + b[3]*x[3][0];    \
-  xb[1] = b[0]*x[0][1] + b[1]*x[1][1] + b[2]*x[2][1] + b[3]*x[3][1];    \
-  xb[2] = b[0]*x[0][2] + b[1]*x[1][2] + b[2]*x[2][2] + b[3]*x[3][2];
+#define SET_UP_RANDOM_CONVEX_COMBINATION()                                   \
+  dbl b[4], xb[3];                                                           \
+  get_random_valid_bary_coord(rng, b);                                       \
+  xb[0] = b[0] * x[0][0] + b[1] * x[1][0] + b[2] * x[2][0] + b[3] * x[3][0]; \
+  xb[1] = b[0] * x[0][1] + b[1] * x[1][1] + b[2] * x[2][1] + b[3] * x[3][1]; \
+  xb[2] = b[0] * x[0][2] + b[1] * x[1][2] + b[2] * x[2][2] + b[3] * x[3][2];
 
 Describe(bb33);
 
@@ -34,7 +31,7 @@ BeforeEach(bb33) {
 
 AfterEach(bb33) {}
 
-Ensure (bb33, has_linear_precision) {
+Ensure(bb33, has_linear_precision) {
   gsl_rng *rng = gsl_rng_alloc(gsl_rng_mt19937);
 
   /**
@@ -55,12 +52,8 @@ Ensure (bb33, has_linear_precision) {
     }
   }
 
-  dbl f[4] = {
-    dbl3_dot(A, x[0]) + B,
-    dbl3_dot(A, x[1]) + B,
-    dbl3_dot(A, x[2]) + B,
-    dbl3_dot(A, x[3]) + B
-  };
+  dbl f[4] = {dbl3_dot(A, x[0]) + B, dbl3_dot(A, x[1]) + B,
+              dbl3_dot(A, x[2]) + B, dbl3_dot(A, x[3]) + B};
 
   dbl Df[4][3];
   for (int i = 0; i < 4; ++i) {
@@ -108,7 +101,7 @@ Ensure (bb33, has_linear_precision) {
   }
 }
 
-Ensure (bb33, has_quadratic_precision) {
+Ensure(bb33, has_quadratic_precision) {
   gsl_rng *rng = gsl_rng_alloc(gsl_rng_mt19937);
 
   dbl qA[3][3];
@@ -249,7 +242,7 @@ Ensure (bb33, has_quadratic_precision) {
  * test verifies that evaluating the original `bb33` along that
  * interval or the cubic produced by restricting along the interval
  * gives the same result. */
-Ensure (bb33, restrict_along_interval_works) {
+Ensure(bb33, restrict_along_interval_works) {
   gsl_rng *rng = gsl_rng_alloc(gsl_rng_mt19937);
 
   bb33 bb;
@@ -257,16 +250,13 @@ Ensure (bb33, restrict_along_interval_works) {
   dbl f[4], Df[4][3], x[4][3], b0[4], b1[4], db[4], bt[4], t, pt, qt;
 
   for (int _ = 0; _ < NUM_RANDOM_TRIALS; ++_) {
-    for (int i = 0; i < 4; ++i)
-      f[i] = gsl_ran_gaussian(rng, 1.0);
+    for (int i = 0; i < 4; ++i) f[i] = gsl_ran_gaussian(rng, 1.0);
 
     for (int i = 0; i < 4; ++i)
-      for (int j = 0; j < 3; ++j)
-        Df[i][j] = gsl_ran_gaussian(rng, 1.0);
+      for (int j = 0; j < 3; ++j) Df[i][j] = gsl_ran_gaussian(rng, 1.0);
 
     for (int i = 0; i < 4; ++i)
-      for (int j = 0; j < 3; ++j)
-        x[i][j] = gsl_ran_gaussian(rng, 1.0);
+      for (int j = 0; j < 3; ++j) x[i][j] = gsl_ran_gaussian(rng, 1.0);
 
     bb33_init_from_3d_data(&bb, f, Df, x);
 

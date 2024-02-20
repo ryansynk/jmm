@@ -1,10 +1,8 @@
 #include <cgreen/cgreen.h>
-
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_rng.h>
-
-#include "mat.h"
-#include "opt.h"
+#include <jmm/mat.h>
+#include <jmm/opt.h>
 
 #define NUM_RANDOM_TRIALS 10
 
@@ -17,7 +15,7 @@ BeforeEach(triqp2) {
 
 AfterEach(triqp2) {}
 
-Ensure (triqp2, solve_works) {
+Ensure(triqp2, solve_works) {
   gsl_rng *rng = gsl_rng_alloc(gsl_rng_mt19937);
 
   triqp2_s qp;
@@ -35,7 +33,6 @@ Ensure (triqp2, solve_works) {
   // Interior point minimizers
 
   for (int i = 0; i < NUM_RANDOM_TRIALS; ++i) {
-
     x[0] = gsl_ran_flat(rng, 0, 1);
     x[1] = gsl_ran_flat(rng, 0, 1);
     if (x[0] + x[1] > 1) {
@@ -123,7 +120,7 @@ Ensure (triqp2, solve_works) {
   qp.b[0] = -1;
   qp.b[1] = 0.5;
   triqp2_solve(&qp);
-  assert_that_double(qp.x[0], is_nearly_double(1./3));
+  assert_that_double(qp.x[0], is_nearly_double(1. / 3));
   assert_that_double(qp.x[1], is_nearly_double(0));
 
   qp.b[0] = 1;
@@ -135,8 +132,8 @@ Ensure (triqp2, solve_works) {
   qp.b[0] = -3.5;
   qp.b[1] = -2;
   triqp2_solve(&qp);
-  assert_that_double(qp.x[0], is_nearly_double(5./6));
-  assert_that_double(qp.x[1], is_nearly_double(1./6));
+  assert_that_double(qp.x[0], is_nearly_double(5. / 6));
+  assert_that_double(qp.x[1], is_nearly_double(1. / 6));
 
   gsl_rng_free(rng);
 }

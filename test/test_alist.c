@@ -1,12 +1,11 @@
 #include <cgreen/cgreen.h>
-
-#include "alist.h"
+#include <jmm/alist.h>
 
 Describe(alist);
 BeforeEach(alist) {}
 AfterEach(alist) {}
 
-Ensure (alist, basic_test) {
+Ensure(alist, basic_test) {
   alist_s *lst;
   alist_alloc(&lst);
   alist_init(lst, sizeof(int), sizeof(float), 8);
@@ -126,4 +125,10 @@ Ensure (alist, basic_test) {
 
   alist_deinit(lst);
   alist_dealloc(&lst);
+}
+
+TestSuite *alist_tests() {
+  TestSuite *suite = create_test_suite();
+  add_test_with_context(suite, alist, basic_test);
+  return suite;
 }

@@ -1,12 +1,11 @@
 #include <cgreen/cgreen.h>
-
-#include "array.h"
+#include <jmm/array.h>
 
 Describe(array);
 BeforeEach(array) {}
 AfterEach(array) {}
 
-Ensure (array, basic_test) {
+Ensure(array, basic_test) {
   array_s *arr;
   array_alloc(&arr);
   array_init(arr, sizeof(int), 4);
@@ -29,4 +28,10 @@ Ensure (array, basic_test) {
 
   array_deinit(arr);
   array_dealloc(&arr);
+}
+
+TestSuite *array_tests(void) {
+  TestSuite *suite = create_test_suite();
+  add_test_with_context(suite, array, basic_test);
+  return suite;
 }
