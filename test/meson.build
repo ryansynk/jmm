@@ -1,22 +1,3 @@
-#jmm_test_lib_src = [
-#    'test_alist.c',
-#    'test_array.c'
-#    'test_bb3.c',
-#    'test_bb3tet.c',
-#    'test_bb3tri.c',
-#    'test_bicubic.c',
-#    'test_bmesh33.c',
-#    'test_camera.c',
-#    'test_dbl22.c',
-#    'test_dbl44.c',
-#    'test_eik3.c',
-#    'test_geom.c',
-#    'test_mesh2.c',
-#    'test_mesh3.c',
-#    'test_opt.c',
-#    'test_utri.c',
-#    'test_vec.c'
-#]
 conf_data = configuration_data()
 
 dir_base = meson.current_source_dir()
