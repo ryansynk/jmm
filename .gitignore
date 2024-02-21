@@ -50,4 +50,5 @@ scratch
 src/jmm/*.c
 srcs
 subprojects/tetgen
+subprojects/cgreen
 vgcore.*

@@ -6,14 +6,16 @@ Describe(mesh3);
 BeforeEach(mesh3) {}
 AfterEach(mesh3) {}
 
-#define SET_UP_CUBE_MESH()                              \
-  dbl verts[24] = {0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1,  \
-                   1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1}; \
-  size_t cells[20] = {0, 2, 3, 6, 0, 4, 5, 6, 0, 3,     \
-                      5, 6, 0, 1, 3, 5, 3, 5, 6, 7};    \
-  mesh3_s *mesh;                                        \
-  mesh3_alloc(&mesh);                                   \
-  mesh3_init(mesh, verts, 8, cells, 5, true, NULL);
+#define SET_UP_CUBE_MESH()                                       \
+  dbl verts[24] = {0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1,           \
+                   1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1};          \
+  size_t cells[20] = {0, 2, 3, 6, 0, 4, 5, 6, 0, 3,              \
+                      5, 6, 0, 1, 3, 5, 3, 5, 6, 7};             \
+  mesh3_data_s data = {                                          \
+      .nverts = 8, .verts = verts, .ncells = 5, .cells = cells}; \
+  mesh3_s *mesh;                                                 \
+  mesh3_alloc(&mesh);                                            \
+  mesh3_init(mesh, &data, true, NULL);
 
 #define TEAR_DOWN_MESH() \
   mesh3_deinit(mesh);    \
@@ -144,12 +146,15 @@ Ensure(mesh3, nec_works_for_cube) {
   int nec, k;
   for (size_t i = 0; i < 8; ++i) {
     for (size_t j = 0; j < 8; ++j) {
-      k = find_edge(edges, num_edges, i, j);
-      nec = mesh3_nec(mesh, i, j);
-      if (k < num_edges) {
-        assert_that(nec, is_equal_to(nec_gt[k]));
-      } else {
-        assert_that(nec, is_equal_to(0));
+      if (i != j) {
+        k = find_edge(edges, num_edges, i, j);
+        uint2 l = {i, j};
+        nec = mesh3_nec(mesh, l);
+        if (k < num_edges) {
+          assert_that(nec, is_equal_to(nec_gt[k]));
+        } else {
+          assert_that(nec, is_equal_to(0));
+        }
       }
     }
   }
@@ -234,7 +239,8 @@ Ensure(mesh3, ec_works_for_cube) {
   size_t ec[3];
 
   for (int i = 0; i < num_edges; ++i) {
-    mesh3_ec(mesh, edges[i][0], edges[i][1], ec);
+    uint2 l = {edges[i][0], edges[i][1]};
+    mesh3_ec(mesh, l, ec);
     qsort(ec, nec[i], sizeof(size_t), (compar_t)compar_size_t);
     assert_that(ec, is_equal_to_contents_of(ec_gt[i], nec[i] * sizeof(size_t)));
   }
@@ -292,4 +298,24 @@ Ensure(mesh3, get_num_diffractors_for_cube) {
   assert_that(mesh3_get_num_diffractors(mesh), is_equal_to(0));
 
   TEAR_DOWN_MESH();
+}
+
+TestSuite *mesh3_tests() {
+  TestSuite *suite = create_test_suite();
+
+  add_test_with_context(suite, mesh3, get_nverts_works_for_cube);
+  add_test_with_context(suite, mesh3, nvc_works_for_cube);
+  add_test_with_context(suite, mesh3, nvf_works_for_cube);
+  add_test_with_context(suite, mesh3, nvv_works_for_cube);
+  add_test_with_context(suite, mesh3, ncc_works_for_cube);
+  add_test_with_context(suite, mesh3, cc_works_for_cube);
+  add_test_with_context(suite, mesh3, nec_works_for_cube);
+  add_test_with_context(suite, mesh3, ec_works_for_cube);
+  add_test_with_context(suite, mesh3, nbde_works_for_cube);
+  add_test_with_context(suite, mesh3, nbdf_works_for_cube);
+  add_test_with_context(suite, mesh3, bdc_works_for_cube);
+  add_test_with_context(suite, mesh3, bdv_works_for_cube);
+  add_test_with_context(suite, mesh3, get_num_diffractors_for_cube);
+
+  return suite;
 }

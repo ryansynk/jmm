@@ -1,5 +1,5 @@
 #include <cgreen/cgreen.h>
-#include <mat.h>
+#include <jmm/mat.h>
 
 Describe(dbl22);
 
@@ -29,4 +29,12 @@ Ensure(dbl22, trace_works) {
   dbl22 A = {{9, -1}, {0, 2}};
   dbl trace_gt = 11;
   assert_that_double(dbl22_trace(A), is_nearly_double(trace_gt));
+}
+
+TestSuite *dbl22_tests() {
+  TestSuite *suite = create_test_suite();
+  add_test_with_context(suite, dbl22, isfinite_works);
+  add_test_with_context(suite, dbl22, det_works);
+  add_test_with_context(suite, dbl22, trace_works);
+  return suite;
 }

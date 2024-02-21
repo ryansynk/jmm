@@ -62,7 +62,7 @@ Ensure(bb33, has_linear_precision) {
     }
   }
 
-  jet3 jet[4];
+  jet31t jet[4];
   for (size_t i = 0; i < 4; ++i) {
     jet[i].f = f[i];
     dbl3_copy(Df[i], jet[i].Df);
@@ -279,4 +279,12 @@ Ensure(bb33, restrict_along_interval_works) {
   }
 
   gsl_rng_free(rng);
+}
+
+TestSuite *bb3tet_tests() {
+  TestSuite *suite = create_test_suite();
+  add_test_with_context(suite, bb33, has_linear_precision);
+  add_test_with_context(suite, bb33, has_quadratic_precision);
+  add_test_with_context(suite, bb33, restrict_along_interval_works);
+  return suite;
 }

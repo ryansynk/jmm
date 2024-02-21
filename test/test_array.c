@@ -30,7 +30,7 @@ Ensure(array, basic_test) {
   array_dealloc(&arr);
 }
 
-TestSuite *array_tests(void) {
+TestSuite *array_tests() {
   TestSuite *suite = create_test_suite();
   add_test_with_context(suite, array, basic_test);
   return suite;

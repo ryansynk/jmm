@@ -3,7 +3,7 @@
 #include <gsl/gsl_permutation.h>
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_rng.h>
-#include <mat.h>
+#include <jmm/mat.h>
 
 #define NUM_RANDOM_TRIALS 10
 
@@ -154,4 +154,12 @@ Ensure(dbl44, dbl4_mul_works) {
   assert_that_double(y[1], is_nearly_double(y_gt[1]));
   assert_that_double(y[2], is_nearly_double(y_gt[2]));
   assert_that_double(y[3], is_nearly_double(y_gt[3]));
+}
+
+TestSuite *dbl44_tests() {
+  TestSuite *suite = create_test_suite();
+  add_test_with_context(suite, dbl44, det_works);
+  add_test_with_context(suite, dbl44, dbl4_solve_works);
+  add_test_with_context(suite, dbl44, dbl4_mul_works);
+  return suite;
 }

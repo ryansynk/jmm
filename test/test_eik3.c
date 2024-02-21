@@ -10,7 +10,7 @@
 
 #define NUM_RANDOM_TRIALS 10
 
-void get_gt_jet(dbl const xsrc[3], dbl const x[3], jet3 *jet) {
+void get_gt_jet(dbl const xsrc[3], dbl const x[3], jet31t *jet) {
   dbl tmp[3];
   dbl3_sub(x, xsrc, tmp);
   dbl L = dbl3_norm(tmp);
@@ -39,7 +39,7 @@ Ensure(eik3, tetra_works_for_olim18_122_update) {
       1, 1, 1   // xhat
   };
 
-  jet3 newjet, jet[3];
+  jet31t newjet, jet[3];
 
   int perm[6][3] = {{0, 1, 2}, {0, 2, 1}, {1, 0, 2},
                     {2, 0, 1}, {1, 2, 0}, {2, 1, 0}};
@@ -410,4 +410,14 @@ Ensure(eik3, tetra_works_for_olim26_updates) {
   mesh3_dealloc(&mesh);
 
   gsl_rng_free(rng);
+}
+
+TestSuite *eik3_tests() {
+  TestSuite *suite = create_test_suite();
+
+  add_test_with_context(suite, eik3, tetra_works_for_olim18_122_update);
+  add_test_with_context(suite, eik3, tetra_works_for_olim18_222_update);
+  add_test_with_context(suite, eik3, olim18_222_is_symmetric);
+  add_test_with_context(suite, eik3, tetra_works_for_olim26_updates);
+  return suite;
 }

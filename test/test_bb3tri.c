@@ -1,11 +1,12 @@
-#include <bb.h>
 #include <cgreen/cgreen.h>
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_rng.h>
-#include <macros.h>
-#include <mat.h>
-#include <util.h>
-#include <vec.h>
+#include <jmm/bb.h>
+#include <jmm/mat.h>
+#include <jmm/util.h>
+#include <jmm/vec.h>
+
+#include "macros.h"
 
 #define NUM_RANDOM_TRIALS 10
 
@@ -279,7 +280,7 @@ Ensure(bb32, df_is_symmetric) {
 }
 
 Ensure(bb32, adjacent_bb32_are_C0) {
-  jet3 jet1[3] = {
+  jet31t jet1[3] = {
       {.f = 6.0515782990567839,
        .Df = {0.10494745590458605, -0.12623235128221608, -0.98643369011247684}},
       {.f = 5.9505211776379818, .Df = {NAN, NAN, NAN}},
@@ -295,7 +296,7 @@ Ensure(bb32, adjacent_bb32_are_C0) {
   bb32 bb1;
   bb32_init_from_jets(&bb1, jet1, x1);
 
-  jet3 jet2[3] = {
+  jet31t jet2[3] = {
       {.f = 6.0515782990567839,
        .Df = {0.10494745590458605, -0.12623235128221608, -0.98643369011247684}},
       {.f = 5.8776740144675363,
@@ -334,7 +335,7 @@ Ensure(bb32, init_from_3d_data_and_init_from_jets_are_equivalent) {
   gsl_rng *rng = gsl_rng_alloc(gsl_rng_mt19937);
 
   dbl T[3], DT[3][3], x[3][3];
-  jet3 jet[3];
+  jet31t jet[3];
 
   bb32 bb_from_3d_data, bb_from_jets;
 
@@ -385,4 +386,16 @@ Ensure(bb32, init_from_3d_data_and_init_from_jets_are_equivalent) {
   }
 
   gsl_rng_free(rng);
+}
+
+TestSuite *bb3tri_tests() {
+  TestSuite *suite = create_test_suite();
+  add_test_with_context(suite, bb32, has_linear_precision);
+  add_test_with_context(suite, bb32, has_quadratic_precision);
+  add_test_with_context(suite, bb32, works_for_simple_olim6_update);
+  add_test_with_context(suite, bb32, df_is_symmetric);
+  add_test_with_context(suite, bb32, adjacent_bb32_are_C0);
+  add_test_with_context(suite, bb32,
+                        init_from_3d_data_and_init_from_jets_are_equivalent);
+  return suite;
 }

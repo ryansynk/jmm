@@ -1,0 +1,6 @@
+#ifndef TEST_CONFIG_H
+#define TEST_CONFIG_H
+
+#define TEST_DATA_FILE "@TEST_DATA_FILE@"
+
+#endif /* TEST_CONFIG_H */

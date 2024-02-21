@@ -6,6 +6,8 @@
 
 #define NUM_RANDOM_TRIALS 10
 
+#define TOL 1e-15
+
 Describe(triqp2);
 
 BeforeEach(triqp2) {
@@ -42,8 +44,7 @@ Ensure(triqp2, solve_works) {
 
     dbl22_dbl2_mul(qp.A, x, qp.b);
     dbl2_negate(qp.b);
-
-    triqp2_solve(&qp);
+    triqp2_solve(&qp, TOL);
 
     assert_that_double(qp.x[0], is_nearly_double(x[0]));
     assert_that_double(qp.x[1], is_nearly_double(x[1]));
@@ -52,19 +53,19 @@ Ensure(triqp2, solve_works) {
   // Vertex minimizers
 
   qp.b[0] = qp.b[1] = 0;
-  triqp2_solve(&qp);
+  triqp2_solve(&qp, TOL);
   assert_that_double(qp.x[0], is_nearly_double(0));
   assert_that_double(qp.x[1], is_nearly_double(0));
 
   qp.b[0] = -3;
   qp.b[1] = -1;
-  triqp2_solve(&qp);
+  triqp2_solve(&qp, TOL);
   assert_that_double(qp.x[0], is_nearly_double(1));
   assert_that_double(qp.x[1], is_nearly_double(0));
 
   qp.b[0] = -1;
   qp.b[1] = -2;
-  triqp2_solve(&qp);
+  triqp2_solve(&qp, TOL);
   assert_that_double(qp.x[0], is_nearly_double(0));
   assert_that_double(qp.x[1], is_nearly_double(1));
 
@@ -77,7 +78,7 @@ Ensure(triqp2, solve_works) {
     dbl22_dbl2_mul(qp.A, x, qp.b);
     dbl2_negate(qp.b);
 
-    triqp2_solve(&qp);
+    triqp2_solve(&qp, TOL);
 
     assert_that_double(qp.x[0], is_nearly_double(x[0]));
     assert_that_double(qp.x[1], is_nearly_double(x[1]));
@@ -90,7 +91,7 @@ Ensure(triqp2, solve_works) {
     dbl22_dbl2_mul(qp.A, x, qp.b);
     dbl2_negate(qp.b);
 
-    triqp2_solve(&qp);
+    triqp2_solve(&qp, TOL);
 
     assert_that_double(qp.x[0], is_nearly_double(x[0]));
     assert_that_double(qp.x[1], is_nearly_double(x[1]));
@@ -103,7 +104,7 @@ Ensure(triqp2, solve_works) {
     dbl22_dbl2_mul(qp.A, x, qp.b);
     dbl2_negate(qp.b);
 
-    triqp2_solve(&qp);
+    triqp2_solve(&qp, TOL);
 
     assert_that_double(qp.x[0], is_nearly_double(x[0]));
     assert_that_double(qp.x[1], is_nearly_double(x[1]));
@@ -113,25 +114,25 @@ Ensure(triqp2, solve_works) {
 
   qp.b[0] = 2;
   qp.b[1] = 1.5;
-  triqp2_solve(&qp);
+  triqp2_solve(&qp, TOL);
   assert_that_double(qp.x[0], is_nearly_double(0));
   assert_that_double(qp.x[1], is_nearly_double(0));
 
   qp.b[0] = -1;
   qp.b[1] = 0.5;
-  triqp2_solve(&qp);
+  triqp2_solve(&qp, TOL);
   assert_that_double(qp.x[0], is_nearly_double(1. / 3));
   assert_that_double(qp.x[1], is_nearly_double(0));
 
   qp.b[0] = 1;
   qp.b[1] = -0.5;
-  triqp2_solve(&qp);
+  triqp2_solve(&qp, TOL);
   assert_that_double(qp.x[0], is_nearly_double(0));
   assert_that_double(qp.x[1], is_nearly_double(0.25));
 
   qp.b[0] = -3.5;
   qp.b[1] = -2;
-  triqp2_solve(&qp);
+  triqp2_solve(&qp, TOL);
   assert_that_double(qp.x[0], is_nearly_double(5. / 6));
   assert_that_double(qp.x[1], is_nearly_double(1. / 6));
 
@@ -148,7 +149,7 @@ Ensure(triqp2, collected_problems) {
   qp.b[0] = -1.8806971755346154;
   qp.b[1] = -0.71064019331246775;
 
-  triqp2_solve(&qp);
+  triqp2_solve(&qp, TOL);
 
   assert_that_double(qp.x[0], is_nearly_double(0.5021101017573482));
   assert_that_double(qp.x[1], is_nearly_double(0));
@@ -160,8 +161,15 @@ Ensure(triqp2, collected_problems) {
   qp.b[0] = -0.27593389435955518;
   qp.b[1] = 0.00022250249910489028;
 
-  triqp2_solve(&qp);
+  triqp2_solve(&qp, TOL);
 
   assert_that_double(qp.x[0], is_nearly_double(1));
   assert_that_double(qp.x[1], is_nearly_double(0));
+}
+
+TestSuite *opt_tests() {
+  TestSuite *suite = create_test_suite();
+  add_test_with_context(suite, triqp2, solve_works);
+  add_test_with_context(suite, triqp2, collected_problems);
+  return suite;
 }

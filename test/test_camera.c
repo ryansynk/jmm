@@ -1,5 +1,5 @@
-#include <camera.h>
 #include <cgreen/cgreen.h>
+#include <jmm/camera.h>
 
 Describe(camera);
 
@@ -16,7 +16,7 @@ Ensure(camera, get_ray_for_index_works_for_orthographic_camera) {
                      .look = {0, 0, 1},
                      .left = {0, 1, 0},
                      .up = {-1, 0, 0},
-                     .near = 1,
+                     //.near = 1,
                      .width = 2,
                      .height = 1,
                      .dim = {2, 4}};
@@ -38,7 +38,7 @@ Ensure(camera, get_ray_for_index_works_for_perspective_camera) {
                      .look = {0, 1, 0},
                      .left = {-1, 0, 0},
                      .up = {0, 0, 1},
-                     .near = 1,
+                     //.near = 1,
                      .fovy = 90,
                      .aspect = 2,
                      .dim = {2, 4}};
@@ -52,4 +52,13 @@ Ensure(camera, get_ray_for_index_works_for_perspective_camera) {
   assert_that_double(ray.dir[0], is_nearly_double(-0.8017837257372732));
   assert_that_double(ray.dir[1], is_nearly_double(0.5345224838248488));
   assert_that_double(ray.dir[2], is_nearly_double(0.2672612419124244));
+}
+
+TestSuite *camera_tests() {
+  TestSuite *suite = create_test_suite();
+  add_test_with_context(suite, camera,
+                        get_ray_for_index_works_for_orthographic_camera);
+  add_test_with_context(suite, camera,
+                        get_ray_for_index_works_for_perspective_camera);
+  return suite;
 }

@@ -73,3 +73,11 @@ Ensure(geom, ray3_intersects_tri3_works) {
   assert_that(hit);
   assert_that_double(t, is_nearly_double(0));
 }
+
+TestSuite *geom_tests() {
+  TestSuite *suite = create_test_suite();
+  add_test_with_context(suite, geom, tetra3_contains_point_works);
+  add_test_with_context(suite, geom, ray3_intersects_tetra3_works);
+  add_test_with_context(suite, geom, ray3_intersects_tri3_works);
+  return suite;
+}

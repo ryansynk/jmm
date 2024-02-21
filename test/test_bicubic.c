@@ -207,3 +207,12 @@ Ensure(bicubic, get_fy_on_edge_works) {
 
   gsl_rng_free(rng);
 }
+
+TestSuite *bicubic_tests() {
+  TestSuite *suite = create_test_suite();
+  add_test_with_context(suite, bicubic, set_data_works);
+  add_test_with_context(suite, bicubic, get_f_on_edge_works);
+  add_test_with_context(suite, bicubic, get_fx_on_edge_works);
+  add_test_with_context(suite, bicubic, get_fy_on_edge_works);
+  return suite;
+}

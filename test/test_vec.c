@@ -62,3 +62,11 @@ Ensure(vec, dblN_ndot_works_on_bad_bb32_df_example) {
   assert_that(ndot[0], is_equal_to(ndot[4]));
   assert_that(ndot[0], is_equal_to(ndot[5]));
 }
+
+TestSuite *vec_tests() {
+  TestSuite *suite = create_test_suite();
+  add_test_with_context(suite, vec, dblN_nsum_extreme_example_works);
+  add_test_with_context(suite, vec, dblN_nsum_works_on_bad_bb32_df_example);
+  add_test_with_context(suite, vec, dblN_ndot_works_on_bad_bb32_df_example);
+  return suite;
+}

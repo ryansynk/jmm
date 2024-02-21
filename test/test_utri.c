@@ -59,3 +59,9 @@ Ensure(utri, tri11_works) {
 
   utri_dealloc(&utri);
 }
+
+TestSuite *utri_tests() {
+  TestSuite *suite = create_test_suite();
+  add_test_with_context(suite, utri, tri11_works);
+  return suite;
+}

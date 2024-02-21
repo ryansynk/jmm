@@ -1,8 +1,9 @@
-#include <bmesh.h>
-#include <camera.h>
 #include <cgreen/cgreen.h>
-#include <mesh3.h>
-#include <rtree.h>
+#include <jmm/bmesh.h>
+#include <jmm/camera.h>
+#include <jmm/mesh3.h>
+#include <jmm/rtree.h>
+#include <test_config.h>
 
 Describe(bmesh33);
 
@@ -21,7 +22,7 @@ AfterEach(bmesh33) {}
  */
 static void create_approximate_sphere_bmesh33(bmesh33_s **bmesh_handle,
                                               mesh3_s **mesh_handle,
-                                              jet3 **jet_handle) {
+                                              jet31t **jet_handle) {
   /**
    * First, set up the `mesh3_s` discretizing [-1, 1]^3.
    */
@@ -61,25 +62,28 @@ static void create_approximate_sphere_bmesh33(bmesh33_s **bmesh_handle,
     for (int j = 0; j < 5; ++j)
       for (int k = 0; k < 4; ++k) cells[5 * i + j][k] = 8 * i + cells[j][k];
 
+  mesh3_data_s data = {
+      .nverts = 64, .verts = verts, .ncells = 40, .cells = cells};
+
   mesh3_alloc(mesh_handle);
-  mesh3_init(*mesh_handle, &verts[0][0], 64, &cells[0][0], 40, false, NULL);
+  mesh3_init(*mesh_handle, &data, false, NULL);
 
   /**
    * Next, compute the jets for each vertex in `verts`.
    */
 
-  *jet_handle = malloc(64 * sizeof(jet3));
+  *jet_handle = malloc(64 * sizeof(jet31t));
 
   for (int i = 0; i < 8; ++i) {
     // We specially set the jet at (0, 0, 0) to zero to avoid a
     // singularity. This makes the overall approximation worse, but
     // this is just a test...
-    (*jet_handle)[8 * i] = (jet3){.f = 0, .Df = {0, 0, 0}};
+    (*jet_handle)[8 * i] = (jet31t){.f = 0, .Df = {0, 0, 0}};
 
     dbl *x;
     for (int j = 1; j < 8; ++j) {
       x = verts[8 * i + j];
-      jet3 J = {.f = dbl3_norm(x)};
+      jet31t J = {.f = dbl3_norm(x)};
       dbl3_normalized(x, J.Df);
       (*jet_handle)[8 * i + j] = J;
     }
@@ -95,7 +99,7 @@ static void create_approximate_sphere_bmesh33(bmesh33_s **bmesh_handle,
 
 static void destroy_approximate_sphere_bmesh33(bmesh33_s **bmesh_handle,
                                                mesh3_s **mesh_handle,
-                                               jet3 **jet_handle) {
+                                               jet31t **jet_handle) {
   bmesh33_deinit(*bmesh_handle);
   bmesh33_dealloc(bmesh_handle);
 
@@ -109,7 +113,7 @@ static void destroy_approximate_sphere_bmesh33(bmesh33_s **bmesh_handle,
 #define SET_UP_APPROXIMATE_SPHERE() \
   bmesh33_s *bmesh;                 \
   mesh3_s *mesh;                    \
-  jet3 *jet;                        \
+  jet31t *jet;                      \
   create_approximate_sphere_bmesh33(&bmesh, &mesh, &jet);
 
 #define TEAR_DOWN_APPROXIMATE_SPHERE() \
@@ -174,9 +178,10 @@ Ensure(bmesh33, ray_intersects_level_works_on_approximate_sphere) {
                      .height = 2.0,
                      .dim = {33, 33}};
 
-  FILE *fp = fopen(
-      "bmesh33_ray_intersects_level_works_on_approximate_sphere.txt", "r");
+  // FILE *fp = fopen(
+  //    "bmesh33_ray_intersects_level_works_on_approximate_sphere.txt", "r");
 
+  FILE *fp = fopen(TEST_DATA_FILE, "r");
   ray3 ray;
   isect isect;
   dbl t_gt;
@@ -184,7 +189,7 @@ Ensure(bmesh33, ray_intersects_level_works_on_approximate_sphere) {
     for (size_t j = 0; j < camera.dim[1]; ++j) {
       // Shoot the (i, j)th camera ray
       ray = camera_get_ray_for_index(&camera, i, j);
-      rtree_intersect(rtree, &ray, &isect);
+      rtree_intersect(rtree, &ray, &isect, isect.obj);
 
       // Read the correct groundtruth value for the intersection
       // parameter from disk
@@ -223,4 +228,14 @@ Ensure(bmesh33, ray_intersects_level_works_on_approximate_sphere) {
   bmesh33_dealloc(&level_bmesh);
 
   TEAR_DOWN_APPROXIMATE_SPHERE();
+}
+
+TestSuite *bmesh33_tests() {
+  TestSuite *suite = create_test_suite();
+  add_test_with_context(suite, bmesh33,
+                        approximate_sphere_setup_and_teardown_works);
+  add_test_with_context(suite, bmesh33, mesh3_cell_contains_point_works);
+  add_test_with_context(suite, bmesh33,
+                        ray_intersects_level_works_on_approximate_sphere);
+  return suite;
 }

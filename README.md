@@ -14,7 +14,7 @@ This is a C library implementing a variety of *jet marching methods*
    ```sh
    pip install cython
    ```
-2. Other build pipeline tools:
+3. Other build pipeline tools:
    ``` sh
    sudo apt install cmake ninja-build build-essential pkg-config libgsl-dev
    ```
@@ -22,6 +22,9 @@ This is a C library implementing a variety of *jet marching methods*
    - Requires GCC-10 or higher: https://askubuntu.com/questions/466651/how-do-i-use-the-latest-gcc-on-ubuntu/1163021#1163021
    - If you want to remove the warnings about an older version of cmake, make sure you have cmake version > 3.17.  If apt isn't finding the latest version, follow the instructions here to add the apt repository directly from cmake/kitware: https://askubuntu.com/questions/355565/how-do-i-install-the-latest-version-of-cmake-from-the-command-line
 
+4. CMake (For Building tests)
+   - Should be installed with a system package manager
+   - Currently required, but only necessary for building tests.
 ## Building
 
 This library can be built using [Meson](https://mesonbuild.com/).
