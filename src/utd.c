@@ -102,16 +102,30 @@ dbl beta(dbl3 t_in, dbl3 t_out, dbl3 t_e, dbl3 t_o, dbl3 n_o, int sign) {
 
 /* Equation (A.4) in Potter et. al 2023
  */
-dbl L(dbl3 x, dbl3 t_e, dbl3 x_e, dbl3 t_in, dbl33 hess, dbl3 grad) {
+dbl L(dbl3 x, dbl3 t_e, dbl3 x_e, dbl3 t_in, dbl33 D2T, dbl3 grad, dbl3 t_out) {
     dbl3 t_aux; dbl3_dbl_mul(t_in,dbl3_dot(t_in,t_e),t_aux);
     dbl3 q_e; dbl3_sub(t_e,t_aux,q_e);
     dbl3_normalize(q_e);
-    dbl kappa_qe = dbl3_dbl33_dbl3_dot(q_e,hess,q_e);
+    dbl kappa_qe = dbl3_dbl33_dbl3_dot(q_e,D2T,q_e);
     kappa_qe /= dbl3_norm(grad);
     dbl rho_e = 1.0/kappa_qe;
+    dbl3 lam, abslam;
+    size_t perm[3];
+    dbl33_eigvals_sym(D2T, lam);
+    dbl3_abs(lam, abslam);
+    dbl3_argsort(abslam, perm);
+
+    dbl kappa1 = lam[perm[2]], kappa2 = lam[perm[1]]; //Should we be dividing by the speed function
+    dbl rho1 = 1; dbl rho2 = 1;
+    rho1 /= kappa1; rho2 /= kappa2;
+    dbl beta = acos(dbl3_dot(t_e,t_out));
+
     dbl rho_diff = dbl3_dist(x,x_e);
-    return 0.0;
-    /* 
+    dbl L_ = rho_diff*(rho_e+rho_diff)*rho1*rho2*sin(beta)*sin(beta);
+    L_ /= rho_e*(rho1+rho_diff)*(rho2+rho_diff);
+
+    return L_;
+    /* In the case of constant speed, this should work:
     dbl3 xxe; dbl3_sub(x,x_e,xxe);
     dbl3 x_proj; dbl3_dbl_mul(t_e, dbl3_dot(t_e, xxe),x_proj);
     x_proj += x_e;
@@ -125,11 +139,14 @@ dbl Di(dbl k, int n, dbl3 t_in, dbl3 t_out, dbl3 t_e, dbl3 t_o, dbl3 n_o,
        int sign_a, int sign_beta) {
   dbl beta_ = beta(t_in, t_out, t_e, t_o, n_o, sign_beta);
   dbl a_ = a(beta_, n, sign_a);
+  // dbl L_ = L(x,t_e,x_e,t_in,D2T,grad,t_o);
   dbl dval =
       -cexp(0.25 * I * JMM_PI) / (2 * n * csqrt(2 * JMM_PI * k) * sin(beta_));
   dval /= tan((JMM_PI + sign_a * beta_) / (2 * n));
   // dval *= F(k * L * a_);
   return dval;
+  /* Fix this by looking at what to transport
+ */
 }
 
 /* Equation (A.8) in Potter et. al 2023
