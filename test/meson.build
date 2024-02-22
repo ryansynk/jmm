@@ -26,6 +26,7 @@ jmm_test_lib_src = [
     'test_mesh2.c',
     'test_mesh3.c',
     'test_opt.c',
+    'test_utd.c',
 #    'test_utri.c',
     'test_vec.c'
 ]

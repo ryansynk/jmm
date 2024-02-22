@@ -103,20 +103,22 @@ dbl beta(dbl3 t_in, dbl3 t_out, dbl3 t_e, dbl3 t_o, dbl3 n_o, int sign) {
 /* Equation (A.4) in Potter et. al 2023
  */
 dbl L(dbl3 x, dbl3 t_e, dbl3 x_e, dbl3 t_in, dbl33 hess, dbl3 grad) {
-    dbl3 t_aux; dbl3_dbl_mul(t_in,dbl3_dot(t_in,t_e),t_aux);
-    dbl3 q_e; dbl3_sub(t_e,t_aux,q_e);
-    dbl3_normalize(q_e);
-    dbl kappa_qe = dbl3_dbl33_dbl3_dot(q_e,hess,q_e);
-    kappa_qe /= dbl3_norm(grad);
-    dbl rho_e = 1.0/kappa_qe;
-    dbl rho_diff = dbl3_dist(x,x_e);
-    return 0.0;
-    /* 
-    dbl3 xxe; dbl3_sub(x,x_e,xxe);
-    dbl3 x_proj; dbl3_dbl_mul(t_e, dbl3_dot(t_e, xxe),x_proj);
-    x_proj += x_e;
-    dbl rho_e = dbl3_dist(x,x_proj);
- */
+  dbl3 t_aux;
+  dbl3_dbl_mul(t_in, dbl3_dot(t_in, t_e), t_aux);
+  dbl3 q_e;
+  dbl3_sub(t_e, t_aux, q_e);
+  dbl3_normalize(q_e);
+  dbl kappa_qe = dbl3_dbl33_dbl3_dot(q_e, hess, q_e);
+  kappa_qe /= dbl3_norm(grad);
+  dbl rho_e = 1.0 / kappa_qe;
+  dbl rho_diff = dbl3_dist(x, x_e);
+  return 0.0;
+  /*
+  dbl3 xxe; dbl3_sub(x,x_e,xxe);
+  dbl3 x_proj; dbl3_dbl_mul(t_e, dbl3_dot(t_e, xxe),x_proj);
+  x_proj += x_e;
+  dbl rho_e = dbl3_dist(x,x_proj);
+*/
 }
 
 /* Equation (A.9) in Potter et. al 2023

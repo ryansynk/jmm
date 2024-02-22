@@ -16,6 +16,7 @@ TestSuite *geom_tests();
 TestSuite *mesh2_tests();
 TestSuite *mesh3_tests();
 TestSuite *opt_tests();
+TestSuite *utd_tests();
 // TestSuite *utri_tests();  // doesn't compile (see source)
 TestSuite *vec_tests();
 
@@ -37,6 +38,7 @@ int main(int argc, char **argv) {
   add_suite(suite, mesh2_tests());
   add_suite(suite, mesh3_tests());
   add_suite(suite, opt_tests());
+  add_suite(suite, utd_tests());
   // add_suite(suite, utri_tests());
   add_suite(suite, vec_tests());
 
