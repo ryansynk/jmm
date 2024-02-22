@@ -1,6 +1,12 @@
 #include <cgreen/cgreen.h>
 #include <jmm/camera.h>
 
+/*
+ * These tests are failing, and I'm not sure why. I believe it
+ * has something to do with the change in the camera API since
+ * the test was first written.
+ */
+
 Describe(camera);
 
 BeforeEach(camera) {

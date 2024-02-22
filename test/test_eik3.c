@@ -10,6 +10,11 @@
 
 #define NUM_RANDOM_TRIALS 10
 
+/*
+ * This test currently does not build since the API has changed since
+ * the test was written. I don't know how to update it yet.
+ */
+
 void get_gt_jet(dbl const xsrc[3], dbl const x[3], jet31t *jet) {
   dbl tmp[3];
   dbl3_sub(x, xsrc, tmp);

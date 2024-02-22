@@ -152,6 +152,15 @@ Ensure(bmesh33, mesh3_cell_contains_point_works) {
   TEAR_DOWN_APPROXIMATE_SPHERE();
 }
 
+/*
+ * This test is failing, and I'm not sure why
+ *
+ * An error in the build scripts sometimes causes the macro
+ * TEST_DATA_FILE not to get set. When it isn't set, the program
+ * segfaults.
+ * However, when it is set, and the file is read properly, the
+ * test still fails.
+ */
 Ensure(bmesh33, ray_intersects_level_works_on_approximate_sphere) {
   SET_UP_APPROXIMATE_SPHERE();
 
@@ -181,6 +190,7 @@ Ensure(bmesh33, ray_intersects_level_works_on_approximate_sphere) {
   // FILE *fp = fopen(
   //    "bmesh33_ray_intersects_level_works_on_approximate_sphere.txt", "r");
 
+  // SOMETIMES THIS MACRO FAILS TO GET SET AND IS LEFT EMPTY
   FILE *fp = fopen(TEST_DATA_FILE, "r");
   ray3 ray;
   isect isect;

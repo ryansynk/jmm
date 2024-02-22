@@ -1,6 +1,11 @@
 #include <cgreen/cgreen.h>
 #include <jmm/utri.h>
 
+/*
+ * This test currently does not build since the API has changed since
+ * the test was written. I don't know how to update it yet.
+ */
+
 Describe(utri);
 
 BeforeEach(utri) {

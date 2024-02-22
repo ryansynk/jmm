@@ -11,12 +11,12 @@ TestSuite *bmesh33_tests();  // failing
 TestSuite *camera_tests();   // failing
 TestSuite *dbl22_tests();
 TestSuite *dbl44_tests();
-// TestSuite *eik3_tests();
+// TestSuite *eik3_tests();  // doesn't compile (see source)
 TestSuite *geom_tests();
 TestSuite *mesh2_tests();
 TestSuite *mesh3_tests();
 TestSuite *opt_tests();
-// TestSuite *utri_tests();
+// TestSuite *utri_tests();  // doesn't compile (see source)
 TestSuite *vec_tests();
 
 int main(int argc, char **argv) {
