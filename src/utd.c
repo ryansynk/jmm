@@ -21,12 +21,7 @@ dblz interp_values[] = {
     0.06376846 - 0.05069646 * I, 0.02457908 - 0.02962494 * I,
     0.00926487 - 0.01633426 * I};
 
-dblz F(dbl x) {
-  if (x < 0.0) {
-    // Currently unimplemented -- need to implement conjugation
-    return -1.0;
-  }
-
+dblz F_p(dbl x) {
   if (x < 0.3) {
     return (sqrt(JMM_PI * x) - 2 * x * cexp(I * (JMM_PI / 4)) -
             (2 / 3) * pow(x, 2) * cexp(-I * (JMM_PI / 4))) *
@@ -44,6 +39,21 @@ dblz F(dbl x) {
            (I * 15) / (8 * pow(x, 3)) + 75 / (16 * pow(x, 4));
   }
 }
+
+dblz F(dbl x_val) {
+  dbl x;
+  dblz F_val;
+    if (x_val < 0.0) {
+    x = -1 * x_val;
+    F_val = conj(F_p(x));
+    return F_val;
+  } else {
+    x = x_val;
+    F_val = F_p(x);
+    return x;
+  }
+}
+
 
 /* Equation (A.6) in Potter et. al 2023
  */
@@ -77,6 +87,10 @@ dbl phi_in(dbl3 t_in, dbl3 t_e, dbl3 t_o, dbl3 n_o) {
   dbl3_sub(t_in, t_aux, t_in_perp);
   dbl3_normalize(t_in_perp);  // calculate using eqn A.2
   dbl phi_in = atan2(dbl3_dot(t_in_perp, n_o), dbl3_dot(t_in_perp, t_o));
+  if (phi_in < 0.0) {
+    phi_in = phi_in + JMM_PI;
+    return phi_in;
+  }
   return phi_in;
 }
 
@@ -87,6 +101,10 @@ dbl phi_out(dbl3 t_out, dbl3 t_e, dbl3 t_o, dbl3 n_o) {
   dbl3_sub(t_out, t_aux, t_out_perp);
   dbl3_normalize(t_out_perp);  // calculate using eqn A.2
   dbl phi_out = atan2(dbl3_dot(t_out_perp, n_o), dbl3_dot(t_out_perp, t_o));
+  if (phi_out < 0.0) {
+    phi_out = phi_out + JMM_PI;
+    return phi_out;
+  }
   return phi_out;
 }
 
@@ -102,8 +120,8 @@ dbl beta(dbl3 t_in, dbl3 t_out, dbl3 t_e, dbl3 t_o, dbl3 n_o, int sign) {
 
 /* Equation (A.4) in Potter et. al 2023
  */
-dbl L(dbl3 x, dbl3 t_e, dbl3 x_e, dbl3 t_in, dbl33 D2T, dbl3 grad, dbl3 t_out) {
-  dbl3 t_aux;
+dbl L(dbl3 x, dbl3 t_e, dbl3 x_e, dbl3 t_in, dbl2 rho, dbl rho_e) {
+   /* dbl3 t_aux;
   dbl3_dbl_mul(t_in, dbl3_dot(t_in, t_e), t_aux);
   dbl3 q_e;
   dbl3_sub(t_e, t_aux, q_e);
@@ -118,24 +136,13 @@ dbl L(dbl3 x, dbl3 t_e, dbl3 x_e, dbl3 t_in, dbl33 D2T, dbl3 grad, dbl3 t_out) {
   dbl3_argsort(abslam, perm);
 
   dbl kappa1 = lam[perm[2]],
-      kappa2 = lam[perm[1]];  // Should we be dividing by the speed function
-  dbl rho1 = 1;
-  dbl rho2 = 1;
-  rho1 /= kappa1;
-  rho2 /= kappa2;
-  dbl beta = acos(dbl3_dot(t_e, t_out));
+      kappa2 = lam[perm[1]];   // Should we be dividing by the speed function */
+  dbl beta = acos((-1)*dbl3_dot(t_e, t_in));
 
   dbl rho_diff = dbl3_dist(x, x_e);
-  dbl L_ = rho_diff * (rho_e + rho_diff) * rho1 * rho2 * sin(beta) * sin(beta);
-  L_ /= rho_e * (rho1 + rho_diff) * (rho2 + rho_diff);
-
+  dbl L_ = rho_diff * (rho_e + rho_diff) * rho[0] * rho[1] * sin(beta) * sin(beta);
+  L_ /= rho_e * (rho[0] + rho_diff) * (rho[1] + rho_diff);
   return L_;
-  /* In the case of constant speed, this should work:
-  dbl3 xxe; dbl3_sub(x,x_e,xxe);
-  dbl3 x_proj; dbl3_dbl_mul(t_e, dbl3_dot(t_e, xxe),x_proj);
-  x_proj += x_e;
-  dbl rho_e = dbl3_dist(x,x_proj);
-*/
 }
 
 /* Equation (A.9) in Potter et. al 2023
