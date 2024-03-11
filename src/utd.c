@@ -50,7 +50,7 @@ dblz F(dbl x_val) {
   } else {
     x = x_val;
     F_val = F_p(x);
-    return x;
+    return F_val;
   }
 }
 
