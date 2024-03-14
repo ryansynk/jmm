@@ -61,6 +61,8 @@ struct eik3 {
   utri_cache_s *bd_utri_cache; // old two-point boundary `utri`
   utri_cache_s *diff_utri_cache; // old two-point updates from diff. edges
 
+  // Mapping from pairs of vertices (edges) to cubic hermite polynomial values
+  // represents diffracting edges
   alist_s *T_diff;
 
   array_s *trial_inds, *bc_inds;
@@ -2405,7 +2407,27 @@ void eik3_prop_A(eik3_s const *eik, dbl33 const *D2T, dbl *A) {
   }
 }
 
-void eik3_get_t_in(eik3_s const *eik, dbl3 *t_in) {
+// todo: ryan
+void eik3_get_diff_verts(eik3_s const *eik, size_t *diff_verts, size_t *num_diff_verts) {
+
+}
+
+// todo: Ryan
+void eik3_get_t_in(eik3_s const*eik_parent, dbl3 *t_in, size_t *diff_verts, size_t num_diff_verts) {
+  for (size_t l = 0; l < mesh3_nverts(eik_parent->mesh); ++l)
+    dbl3_nan(t_in[l]);
+
+  // loop over vertices on diffracting edge
+  for (size_t i = 0; i < num_diff_verts; ++i) {
+    // find gradient of eikonal at vertex diff_verts[i]
+    size_t l = diff_verts[i];
+    dbl3_copy(eik_parent->jet[l].Df, t_in[l]);
+  }
+
+  eik3_transport_unit_vector(eik_parent, t_in, true);
+}
+
+void eik3_get_t_in_old(eik3_s const *eik, dbl3 *t_in) {
   for (size_t l = 0; l < mesh3_nverts(eik->mesh); ++l)
     dbl3_nan(t_in[l]);
 
@@ -2417,7 +2439,12 @@ void eik3_get_t_in(eik3_s const *eik, dbl3 *t_in) {
   eik3_transport_unit_vector(eik, t_in, true);
 }
 
-void eik3_get_t_out(eik3_s const *eik, dbl3 *t_out) {
+// todo: Ryan
+void eik3_get_t_out(eik3_s const*eik, dbl3 *t_out, size_t *diff_verts, size_t num_diff_verts) {
+
+}
+
+void eik3_get_t_out_old(eik3_s const *eik, dbl3 *t_out) {
   mesh3_s const *mesh = eik->mesh;
 
   for (size_t l = 0; l < mesh3_nverts(mesh); ++l)
@@ -2449,4 +2476,19 @@ void eik3_get_t_out(eik3_s const *eik, dbl3 *t_out) {
       dbl3_copy(eik->jet[l].Df, t_out[l]);
 
   eik3_transport_unit_vector(eik, t_out, true);
+}
+
+// todo: meenakshi
+void eik3_get_principal_curvatures(eik3_s const *eik_parent, dbl (*principal_curvatures)[2], size_t *diff_verts, size_t num_diff_verts) {
+
+}
+
+// todo: meenakshi
+void eik3_get_sectional_curvature(eik3_s const *eik_parent, dbl *sectional_curvature, size_t *diff_verts, size_t num_diff_verts) {
+
+}
+
+// todo: meenakshi
+void eik3_get_rho_diff(eik3_s const *eik_parent, size_t *diff_verts, size_t num_diff_verts) {
+
 }

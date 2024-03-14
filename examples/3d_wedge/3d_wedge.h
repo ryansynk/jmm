@@ -86,6 +86,11 @@ typedef struct jmm_3d_wedge_problem {
   dbl3 *t_out_direct;
   dbl3 *t_out_o_refl;
   dbl3 *t_out_n_refl;
+
+  size_t *diff_verts;
+  size_t num_diff_verts;
+  dbl (*principal_curvatures_direct)[2];
+  dbl *sectional_curvature_direct;
 } jmm_3d_wedge_problem_s;
 
 void jmm_3d_wedge_problem_alloc(jmm_3d_wedge_problem_s **wedge);

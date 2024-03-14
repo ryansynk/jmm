@@ -88,6 +88,9 @@ jmm_error_e jmm_3d_wedge_problem_init(jmm_3d_wedge_problem_s *wedge,
   wedge->t_out_o_refl = malloc(nverts*sizeof(dbl3));
   wedge->t_out_n_refl = malloc(nverts*sizeof(dbl3));
 
+  wedge->diff_verts = malloc(nverts*sizeof(size_t));
+  wedge->principal_curvatures_direct = malloc(nverts*sizeof(dbl3[2]));
+  wedge->sectional_curvature_direct = malloc(nverts*sizeof(dbl3));
   return error;
 }
 
@@ -486,8 +489,8 @@ static void solve_direct(jmm_3d_wedge_problem_s *wedge) {
 
   /** Compute t_in and t_out fields: */
 
-  eik3_get_t_in(wedge->eik_direct, wedge->t_in_direct);
-  eik3_get_t_out(wedge->eik_direct, wedge->t_out_direct);
+  eik3_get_t_in_old(wedge->eik_direct, wedge->t_in_direct);
+  eik3_get_t_out_old(wedge->eik_direct, wedge->t_out_direct);
 }
 
 static void solve_o_refl(jmm_3d_wedge_problem_s *wedge) {
@@ -544,8 +547,8 @@ static void solve_o_refl(jmm_3d_wedge_problem_s *wedge) {
 
   /** Get t_in and t_out vector fields: */
 
-  eik3_get_t_in(wedge->eik_o_refl, wedge->t_in_o_refl);
-  eik3_get_t_out(wedge->eik_o_refl, wedge->t_out_o_refl);
+  eik3_get_t_in_old(wedge->eik_o_refl, wedge->t_in_o_refl);
+  eik3_get_t_out_old(wedge->eik_o_refl, wedge->t_out_o_refl);
 }
 
 static void solve_n_refl(jmm_3d_wedge_problem_s *wedge) {
@@ -600,8 +603,18 @@ static void solve_n_refl(jmm_3d_wedge_problem_s *wedge) {
 
   /** Transport t_in and t_out vectors: */
 
-  eik3_get_t_in(wedge->eik_o_refl, wedge->t_in_n_refl);
-  eik3_get_t_out(wedge->eik_o_refl, wedge->t_out_n_refl);
+  // todo: ryan
+  eik3_get_diff_verts(wedge->eik_n_refl, wedge->diff_verts, wedge->num_diff_verts);
+  eik3_get_t_in(wedge->eik_direct, wedge->t_in_n_refl, wedge->diff_verts, wedge->num_diff_verts);
+  eik3_get_t_out(wedge->eik_n_refl, wedge->t_out_n_refl, wedge->diff_verts, wedge->num_diff_verts);
+
+  // todo: meenakshi
+  eik3_get_principal_curvatures(wedge->eik_direct, wedge->principal_curvatures_direct, wedge->diff_verts, wedge->num_diff_verts);
+  eik3_get_sectional_curvature(wedge->eik_direct, wedge->sectional_curvature_direct, wedge->diff_verts, wedge->num_diff_verts);
+  eik3_get_rho_diff(wedge->eik_direct, wedge->diff_verts, wedge->num_diff_verts);
+
+  // compute diffraction coefficient
+  // multiply it by amplitude
 }
 
 jmm_error_e

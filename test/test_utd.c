@@ -57,7 +57,7 @@ Ensure(utd, test_L) {
   dbl3 t_in = {1.0, 0.0, 0.0};
   dbl33 hess = {{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}};
   dbl3 grad = {1.0, 0.0, 0.0};
-  dbl l = L(x, t_e, x_e, t_in, hess, grad);
+  //dbl l = L(x, t_e, x_e, t_in, hess, grad);
 }
 
 Ensure(utd, test_Di) {
