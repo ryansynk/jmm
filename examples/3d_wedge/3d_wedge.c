@@ -89,8 +89,9 @@ jmm_error_e jmm_3d_wedge_problem_init(jmm_3d_wedge_problem_s *wedge,
   wedge->t_out_n_refl = malloc(nverts*sizeof(dbl3));
 
   wedge->diff_verts = malloc(nverts*sizeof(size_t));
-  wedge->principal_curvatures_direct = malloc(nverts*sizeof(dbl3[2]));
-  wedge->sectional_curvature_direct = malloc(nverts*sizeof(dbl3));
+  wedge->kappa1 = malloc(nverts*sizeof(dbl));
+  wedge->kappa2 = malloc(nverts*sizeof(dbl));
+  wedge->sectional_curvature_direct = malloc(nverts*sizeof(dbl));
   return error;
 }
 
@@ -609,9 +610,11 @@ static void solve_n_refl(jmm_3d_wedge_problem_s *wedge) {
   eik3_get_t_out(wedge->eik_n_refl, wedge->t_out_n_refl, wedge->diff_verts, wedge->num_diff_verts);
 
   // todo: meenakshi
-  eik3_get_principal_curvatures(wedge->eik_direct, wedge->principal_curvatures_direct, wedge->diff_verts, wedge->num_diff_verts);
-  eik3_get_sectional_curvature(wedge->eik_direct, wedge->sectional_curvature_direct, wedge->diff_verts, wedge->num_diff_verts);
-  eik3_get_rho_diff(wedge->eik_direct, wedge->diff_verts, wedge->num_diff_verts);
+  eik3_get_principal_curvatures(wedge->eik_n_refl, wedge->D2T_direct, wedge->kappa1, wedge->kappa2, wedge->diff_verts, wedge->num_diff_verts);
+  
+  eik3_get_sectional_curvature(wedge->eik_n_refl, wedge->eik_direct, wedge->D2T_direct, wedge->t_in_n_refl, wedge->sectional_curvature_direct, wedge->diff_verts, wedge->num_diff_verts);
+  
+  eik3_get_rho_diff(wedge->eik_n_refl, wedge->diff_verts, wedge->num_diff_verts);
 
   // compute diffraction coefficient
   // multiply it by amplitude

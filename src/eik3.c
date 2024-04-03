@@ -2478,17 +2478,69 @@ void eik3_get_t_out_old(eik3_s const *eik, dbl3 *t_out) {
   eik3_transport_unit_vector(eik, t_out, true);
 }
 
-// todo: meenakshi
-void eik3_get_principal_curvatures(eik3_s const *eik_parent, dbl (*principal_curvatures)[2], size_t *diff_verts, size_t num_diff_verts) {
+// done: meenakshi
+void eik3_get_principal_curvatures(eik3_s const *eik, dbl33 const *D2T, dbl *kappa1, dbl *kappa2, size_t *diff_verts, size_t num_diff_verts) {
+  for (size_t l = 0; l < mesh3_nverts(eik->mesh); ++l) {
+    kappa1[l] = NAN;
+    kappa2[l] = NAN;
+  } 
+
+/* Take Hessian from incident field */
+  for (size_t i = 0; i < num_diff_verts; ++i) {
+    size_t l = diff_verts[i];
+    dbl3 lam, abslam;
+    size_t perm[3];
+    array_get(eik->bc_inds, i, &l);
+    dbl33_eigvals_sym(D2T[l], lam);
+    dbl3_abs(lam, abslam);
+    dbl3_argsort(abslam, perm);
+
+    kappa1[l] = lam[perm[2]];
+    kappa2[l] = lam[perm[1]];
+  }
+
+  // todo_m: Could also try this:
+  /* for (size_t i = 0, l; i < array_size(eik->bc_inds); ++i) {
+    dbl3 lam, abslam;
+    size_t perm[3];
+    array_get(eik->bc_inds, i, &l);
+    dbl33_eigvals_sym(D2T[l], lam);
+    dbl3_abs(lam, abslam);
+    dbl3_argsort(abslam, perm);
+
+    kappa1[l] = lam[perm[2]];
+    kappa2[l] = lam[perm[1]];
+  } */
+
+  eik3_transport_curvature(eik, kappa1, true); // todo_m Check current implementation of this
+  eik3_transport_curvature(eik, kappa2, true);
 
 }
 
 // todo: meenakshi
-void eik3_get_sectional_curvature(eik3_s const *eik_parent, dbl *sectional_curvature, size_t *diff_verts, size_t num_diff_verts) {
-
+void eik3_get_sectional_curvature(eik3_s const *eik, eik3_s const *eik_dir, dbl33 const *D2T, dbl3 *t_in, dbl *sectional_curvature, size_t *diff_verts, size_t num_diff_verts) {
+  for (size_t l = 0; l < mesh3_nverts(eik->mesh); ++l) {
+    sectional_curvature[l] = NAN;
+  } 
+  
+  dbl3 t_e = {0, 0, 1};
+  for (size_t i = 0; i < num_diff_verts; ++i) {
+    size_t l = diff_verts[i];
+    dbl3 t_aux;
+    dbl3_dbl_mul(t_in[l], dbl3_dot(t_in[l], t_e), t_aux);
+    dbl3 q_e;
+    dbl3_sub(t_aux, t_e, q_e);
+    dbl3_normalize(q_e);
+    sectional_curvature[l] = (-1)*dbl3_dbl33_dbl3_dot(q_e, D2T[l], q_e);
+    sectional_curvature[l] /= dbl3_norm(eik_dir->jet[l].Df);
+  }
+  eik3_transport_curvature(eik, sectional_curvature, true);
 }
 
 // todo: meenakshi
-void eik3_get_rho_diff(eik3_s const *eik_parent, size_t *diff_verts, size_t num_diff_verts) {
+void eik3_get_rho_diff(eik3_s const *eik, size_t *diff_verts, size_t num_diff_verts) {
+   for (size_t i = 0; i < num_diff_verts; ++i) {
+    size_t l = diff_verts[i];
+   }
 
 }
