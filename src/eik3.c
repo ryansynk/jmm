@@ -2634,7 +2634,10 @@ void eik3_get_sectional_curvature(eik3_s const *eik, eik3_s const *eik_dir, dbl3
 }
 
 // todo: meenakshi
-void eik3_get_rho_diff(eik3_s const *eik, size_t diff_idx) {
+void eik3_get_rho_diff(eik3_s const *eik, dbl *rho_diff, size_t diff_idx) {
+  for (size_t l = 0; l < mesh3_nverts(eik->mesh); ++l)
+    rho_diff[l] = NAN;
+ 
   size_t diff_size = mesh3_get_diffractor_size(eik->mesh, diff_idx);
   size_t(*le)[2] = malloc(diff_size * sizeof(size_t[2]));
   mesh3_get_diffractor(eik->mesh, diff_idx, le);
@@ -2655,5 +2658,41 @@ void eik3_get_rho_diff(eik3_s const *eik, size_t diff_idx) {
   size_t l;
   for (size_t i = 0; i < array_size(l_diff); ++i) {
     array_get(l_diff, i, &l);
+    rho_diff[l] = 0;
+  }
+
+  mesh3_s const *mesh = eik->mesh;
+
+  for (size_t i = 0, l; i < mesh3_nverts(mesh); ++i) {
+    l = eik->accepted[i];
+
+    if (!isnan(rho_diff[l]))
+      continue;
+
+    par3_s par = eik3_get_par(eik, l);
+    if (par3_is_empty(&par))
+      continue;
+    uint3 la;
+    dbl3 ba;
+    size_t na = par3_get_active(&par, la, ba);
+    assert(na > 0);
+
+    dbl rho_lam = 0;
+
+    dbl3 xlam = {0, 0, 0};
+    for (size_t j = 0; j < na; ++j) {
+      assert(isfinite(rho_diff[la[j]]));
+      dbl3 xj;
+      mesh3_copy_vert(mesh, la[j], xj);
+      for (size_t k = 0; k < 3; ++k) {
+        xlam[k] += ba[j]*xj[k];
+      }
+      rho_lam += ba[j]*rho_diff[la[j]];
+    }
+
+    dbl3 x;
+    mesh3_copy_vert(mesh, l, x);
+
+    rho_diff[l] = rho_lam + dbl3_dist(x, xlam);
   }
 }

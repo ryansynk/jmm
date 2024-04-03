@@ -90,6 +90,7 @@ typedef struct jmm_3d_wedge_problem {
   dbl *kappa1;
   dbl *kappa2;
   dbl *sectional_curvature_direct;
+  dbl *rho_diff;
 } jmm_3d_wedge_problem_s;
 
 void jmm_3d_wedge_problem_alloc(jmm_3d_wedge_problem_s **wedge);
