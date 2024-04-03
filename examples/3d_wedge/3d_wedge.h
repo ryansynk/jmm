@@ -87,8 +87,6 @@ typedef struct jmm_3d_wedge_problem {
   dbl3 *t_out_o_refl;
   dbl3 *t_out_n_refl;
 
-  size_t *diff_verts;
-  size_t num_diff_verts;
   dbl *kappa1;
   dbl *kappa2;
   dbl *sectional_curvature_direct;

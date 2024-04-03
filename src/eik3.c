@@ -2123,7 +2123,8 @@ any_cell_vert_updated_from_diff_edge(eik3_s const *eik, size_t cv[4]) {
  * and those which are finite will be left alone and used to compute
  * other values. */
 void eik3_get_D2T(eik3_s const *eik, dbl33 *D2T) {
-  mesh3_s const *mesh = eik3_get_mesh(eik);
+
+     mesh3_s const *mesh = eik3_get_mesh(eik);
   jet31t const *jet = eik->jet;
 
   /* we also want to initialize D2T for points which are immediately
@@ -2407,25 +2408,36 @@ void eik3_prop_A(eik3_s const *eik, dbl33 const *D2T, dbl *A) {
   }
 }
 
-// todo: ryan
-void eik3_get_diff_verts(eik3_s const *eik, size_t *diff_verts, size_t *num_diff_verts) {
-
-}
-
 // todo: Ryan
-void eik3_get_t_in(eik3_s const*eik_parent, dbl3 *t_in, size_t *diff_verts, size_t num_diff_verts) {
-  for (size_t l = 0; l < mesh3_nverts(eik_parent->mesh); ++l)
-    dbl3_nan(t_in[l]);
+void eik3_get_t_in(eik3_s const *eik_parent, eik3_s const *eik_child,
+                   dbl3 *t_in, size_t diff_idx) {
+  for (size_t l = 0; l < mesh3_nverts(eik_parent->mesh); ++l) dbl3_nan(t_in[l]);
 
-  // loop over vertices on diffracting edge
-  for (size_t i = 0; i < num_diff_verts; ++i) {
-    // find gradient of eikonal at vertex diff_verts[i]
-    size_t l = diff_verts[i];
+  size_t diff_size = mesh3_get_diffractor_size(eik_parent->mesh, diff_idx);
+  size_t(*le)[2] = malloc(diff_size * sizeof(size_t[2]));
+  mesh3_get_diffractor(eik_parent->mesh, diff_idx, le);
+
+  /* Array of unique diffractor node indices */
+  array_s *l_diff;
+  array_alloc(&l_diff);
+  array_init(l_diff, sizeof(size_t), ARRAY_DEFAULT_CAPACITY);
+
+  /* ... fill it */
+  for (size_t i = 0; i < diff_size; ++i)
+    for (size_t j = 0; j < 2; ++j)
+      if (!array_contains(l_diff, &le[i][j])) array_append(l_diff, &le[i][j]);
+
+  /* Free the diffractor edges */
+  free(le);
+  size_t l;
+  for (size_t i = 0; i < array_size(l_diff); ++i) {
+    array_get(l_diff, i, &l);
     dbl3_copy(eik_parent->jet[l].Df, t_in[l]);
   }
 
-  eik3_transport_unit_vector(eik_parent, t_in, true);
+  eik3_transport_unit_vector(eik_child, t_in, true);
 }
+
 
 void eik3_get_t_in_old(eik3_s const *eik, dbl3 *t_in) {
   for (size_t l = 0; l < mesh3_nverts(eik->mesh); ++l)
@@ -2439,9 +2451,56 @@ void eik3_get_t_in_old(eik3_s const *eik, dbl3 *t_in) {
   eik3_transport_unit_vector(eik, t_in, true);
 }
 
-// todo: Ryan
-void eik3_get_t_out(eik3_s const*eik, dbl3 *t_out, size_t *diff_verts, size_t num_diff_verts) {
+void eik3_get_t_out(eik3_s const *eik_parent, eik3_s const *eik_child,
+                    dbl3 *t_out, size_t diff_idx) {
+  size_t nverts = mesh3_nverts(eik_parent->mesh);
+  for (size_t l = 0; l < nverts; ++l) dbl3_nan(t_out[l]);
 
+  size_t diff_size = mesh3_get_diffractor_size(eik_parent->mesh, diff_idx);
+  size_t(*le)[2] = malloc(diff_size * sizeof(size_t[2]));
+  mesh3_get_diffractor(eik_parent->mesh, diff_idx, le);
+
+  /* Array of unique diffractor node indices */
+  array_s *l_diff;
+  array_alloc(&l_diff);
+  array_init(l_diff, sizeof(size_t), ARRAY_DEFAULT_CAPACITY);
+
+  /* ... fill it */
+  for (size_t i = 0; i < diff_size; ++i)
+    for (size_t j = 0; j < 2; ++j)
+      if (!array_contains(l_diff, &le[i][j])) array_append(l_diff, &le[i][j]);
+
+  /* Free the diffractor edges */
+  free(le);
+
+  /* nodes with a parent on diff edge*/
+  array_s *l_parent_diff;
+  array_alloc(&l_parent_diff);
+  array_init(l_parent_diff, sizeof(size_t), ARRAY_DEFAULT_CAPACITY);
+
+  /* Go through and count the children of each node.
+   *
+   * Note: this is well-defined, since by construction a node can have
+   * at most one parent. */
+  size_t *num_ch = calloc(nverts, sizeof(size_t));
+  for (size_t l_ch = 0; l_ch < nverts; ++l_ch) {
+    uint3 l;
+    size_t n = par3_get_active_inds(&eik_child->par[l_ch], l);
+    // l[0], l[1], l[2] are parent inds.
+    for (size_t j = 0; j < 3; j++) {
+      if (array_contains(l_diff, l[j])) {
+        array_append(l_parent_diff, l_ch);
+      }
+    }
+  }
+
+  size_t l;
+  for (size_t i = 0; i < array_size(l_parent_diff); ++i) {
+    array_get(l_parent_diff, i, &l);
+    dbl3_copy(eik_child->jet[l].Df, t_out[l]);
+  }
+
+  eik3_transport_unit_vector(eik_child, t_out, true);
 }
 
 void eik3_get_t_out_old(eik3_s const *eik, dbl3 *t_out) {
@@ -2479,15 +2538,33 @@ void eik3_get_t_out_old(eik3_s const *eik, dbl3 *t_out) {
 }
 
 // done: meenakshi
-void eik3_get_principal_curvatures(eik3_s const *eik, dbl33 const *D2T, dbl *kappa1, dbl *kappa2, size_t *diff_verts, size_t num_diff_verts) {
+void eik3_get_principal_curvatures(eik3_s const *eik, dbl33 const *D2T, dbl *kappa1, dbl *kappa2, size_t diff_idx) {
   for (size_t l = 0; l < mesh3_nverts(eik->mesh); ++l) {
     kappa1[l] = NAN;
     kappa2[l] = NAN;
   } 
 
+  size_t diff_size = mesh3_get_diffractor_size(eik->mesh, diff_idx);
+  size_t(*le)[2] = malloc(diff_size * sizeof(size_t[2]));
+  mesh3_get_diffractor(eik->mesh, diff_idx, le);
+
+  /* Array of unique diffractor node indices */
+  array_s *l_diff;
+  array_alloc(&l_diff);
+  array_init(l_diff, sizeof(size_t), ARRAY_DEFAULT_CAPACITY);
+
+  /* ... fill it */
+  for (size_t i = 0; i < diff_size; ++i)
+    for (size_t j = 0; j < 2; ++j)
+      if (!array_contains(l_diff, &le[i][j])) array_append(l_diff, &le[i][j]);
+
+  /* Free the diffractor edges */
+  free(le);
+
 /* Take Hessian from incident field */
-  for (size_t i = 0; i < num_diff_verts; ++i) {
-    size_t l = diff_verts[i];
+  size_t l;
+  for (size_t i = 0; i < array_size(l_diff); ++i) {
+    array_get(l_diff, i, &l);
     dbl3 lam, abslam;
     size_t perm[3];
     array_get(eik->bc_inds, i, &l);
@@ -2518,14 +2595,33 @@ void eik3_get_principal_curvatures(eik3_s const *eik, dbl33 const *D2T, dbl *kap
 }
 
 // todo: meenakshi
-void eik3_get_sectional_curvature(eik3_s const *eik, eik3_s const *eik_dir, dbl33 const *D2T, dbl3 *t_in, dbl *sectional_curvature, size_t *diff_verts, size_t num_diff_verts) {
+void eik3_get_sectional_curvature(eik3_s const *eik, eik3_s const *eik_dir, dbl33 const *D2T, dbl3 *t_in, dbl *sectional_curvature, size_t diff_idx) {
   for (size_t l = 0; l < mesh3_nverts(eik->mesh); ++l) {
     sectional_curvature[l] = NAN;
   } 
-  
+
+  size_t diff_size = mesh3_get_diffractor_size(eik->mesh, diff_idx);
+  size_t(*le)[2] = malloc(diff_size * sizeof(size_t[2]));
+  mesh3_get_diffractor(eik->mesh, diff_idx, le);
+
+  /* Array of unique diffractor node indices */
+  array_s *l_diff;
+  array_alloc(&l_diff);
+  array_init(l_diff, sizeof(size_t), ARRAY_DEFAULT_CAPACITY);
+
+  /* ... fill it */
+  for (size_t i = 0; i < diff_size; ++i)
+    for (size_t j = 0; j < 2; ++j)
+      if (!array_contains(l_diff, &le[i][j])) array_append(l_diff, &le[i][j]);
+
+  /* Free the diffractor edges */
+  free(le);
+
+/* Take Hessian from incident field */
   dbl3 t_e = {0, 0, 1};
-  for (size_t i = 0; i < num_diff_verts; ++i) {
-    size_t l = diff_verts[i];
+  size_t l;
+  for (size_t i = 0; i < array_size(l_diff); ++i) {
+    array_get(l_diff, i, &l);
     dbl3 t_aux;
     dbl3_dbl_mul(t_in[l], dbl3_dot(t_in[l], t_e), t_aux);
     dbl3 q_e;
@@ -2538,9 +2634,26 @@ void eik3_get_sectional_curvature(eik3_s const *eik, eik3_s const *eik_dir, dbl3
 }
 
 // todo: meenakshi
-void eik3_get_rho_diff(eik3_s const *eik, size_t *diff_verts, size_t num_diff_verts) {
-   for (size_t i = 0; i < num_diff_verts; ++i) {
-    size_t l = diff_verts[i];
-   }
+void eik3_get_rho_diff(eik3_s const *eik, size_t diff_idx) {
+  size_t diff_size = mesh3_get_diffractor_size(eik->mesh, diff_idx);
+  size_t(*le)[2] = malloc(diff_size * sizeof(size_t[2]));
+  mesh3_get_diffractor(eik->mesh, diff_idx, le);
 
+  /* Array of unique diffractor node indices */
+  array_s *l_diff;
+  array_alloc(&l_diff);
+  array_init(l_diff, sizeof(size_t), ARRAY_DEFAULT_CAPACITY);
+
+  /* ... fill it */
+  for (size_t i = 0; i < diff_size; ++i)
+    for (size_t j = 0; j < 2; ++j)
+      if (!array_contains(l_diff, &le[i][j])) array_append(l_diff, &le[i][j]);
+
+  /* Free the diffractor edges */
+  free(le);
+
+  size_t l;
+  for (size_t i = 0; i < array_size(l_diff); ++i) {
+    array_get(l_diff, i, &l);
+  }
 }

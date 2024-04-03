@@ -43,7 +43,7 @@ dblz F_p(dbl x) {
 dblz F(dbl x_val) {
   dbl x;
   dblz F_val;
-    if (x_val < 0.0) {
+  if (x_val < 0.0) {
     x = -1 * x_val;
     F_val = conj(F_p(x));
     return F_val;
@@ -53,7 +53,6 @@ dblz F(dbl x_val) {
     return F_val;
   }
 }
-
 
 /* Equation (A.6) in Potter et. al 2023
  */
@@ -121,26 +120,27 @@ dbl beta(dbl3 t_in, dbl3 t_out, dbl3 t_e, dbl3 t_o, dbl3 n_o, int sign) {
 /* Equation (A.4) in Potter et. al 2023
  */
 dbl L(dbl3 x, dbl3 t_e, dbl3 x_e, dbl3 t_in, dbl2 rho, dbl rho_e) {
-   /* dbl3 t_aux;
-  dbl3_dbl_mul(t_in, dbl3_dot(t_in, t_e), t_aux);
-  dbl3 q_e;
-  dbl3_sub(t_e, t_aux, q_e);
-  dbl3_normalize(q_e);
-  dbl kappa_qe = dbl3_dbl33_dbl3_dot(q_e, D2T, q_e);
-  kappa_qe /= dbl3_norm(grad);
-  dbl rho_e = 1.0 / kappa_qe;
-  dbl3 lam, abslam;
-  size_t perm[3];
-  dbl33_eigvals_sym(D2T, lam);
-  dbl3_abs(lam, abslam);
-  dbl3_argsort(abslam, perm);
+  /* dbl3 t_aux;
+ dbl3_dbl_mul(t_in, dbl3_dot(t_in, t_e), t_aux);
+ dbl3 q_e;
+ dbl3_sub(t_e, t_aux, q_e);
+ dbl3_normalize(q_e);
+ dbl kappa_qe = dbl3_dbl33_dbl3_dot(q_e, D2T, q_e);
+ kappa_qe /= dbl3_norm(grad);
+ dbl rho_e = 1.0 / kappa_qe;
+ dbl3 lam, abslam;
+ size_t perm[3];
+ dbl33_eigvals_sym(D2T, lam);
+ dbl3_abs(lam, abslam);
+ dbl3_argsort(abslam, perm);
 
-  dbl kappa1 = lam[perm[2]],
-      kappa2 = lam[perm[1]];   // Should we be dividing by the speed function */
-  dbl beta = acos((-1)*dbl3_dot(t_e, t_in));
+ dbl kappa1 = lam[perm[2]],
+     kappa2 = lam[perm[1]];   // Should we be dividing by the speed function */
+  dbl beta = acos((-1) * dbl3_dot(t_e, t_in));
 
   dbl rho_diff = dbl3_dist(x, x_e);
-  dbl L_ = rho_diff * (rho_e + rho_diff) * rho[0] * rho[1] * sin(beta) * sin(beta);
+  dbl L_ =
+      rho_diff * (rho_e + rho_diff) * rho[0] * rho[1] * sin(beta) * sin(beta);
   L_ /= rho_e * (rho[0] + rho_diff) * (rho[1] + rho_diff);
   return L_;
 }

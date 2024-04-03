@@ -84,11 +84,10 @@ void eik3_get_t_in_old(eik3_s const *eik, dbl3 *t_in);
 void eik3_get_t_out_old(eik3_s const *eik, dbl3 *t_out);
 
 // todo: ryan
-void eik3_get_diff_verts(eik3_s const *eik, size_t *diff_verts, size_t *num_diff_verts);
-void eik3_get_t_in(eik3_s const *eik_parent, dbl3 *t_in, size_t *diff_verts, size_t num_diff_verts);
-void eik3_get_t_out(eik3_s const *eik, dbl3 *t_out, size_t *diff_verts, size_t num_diff_verts);
+void eik3_get_t_in(eik3_s const *eik_parent, eik3_s const *eik_child, dbl3 *t_in, size_t diff_idx);
+void eik3_get_t_out(eik3_s const *eik_parent, eik3_s const *eik_child, dbl3 *t_out, size_t diff_idx);
 
 // todo: meenakshi
-void eik3_get_principal_curvatures(eik3_s const *eik, dbl33 const *D2T, dbl *kappa1, dbl *kappa2, size_t *diff_verts, size_t num_diff_verts);
-void eik3_get_sectional_curvature(eik3_s const *eik, eik3_s const *eik_dir, dbl33 const *D2T, dbl3 *t_in, dbl *sectional_curvature, size_t *diff_verts, size_t num_diff_verts);
-void eik3_get_rho_diff(eik3_s const *eik_parent, size_t *diff_verts, size_t num_diff_verts);
+void eik3_get_principal_curvatures(eik3_s const *eik, dbl33 const *D2T, dbl *kappa1, dbl *kappa2, size_t diff_idx);
+void eik3_get_sectional_curvature(eik3_s const *eik, eik3_s const *eik_dir, dbl33 const *D2T, dbl3 *t_in, dbl *sectional_curvature, size_t diff_idx);
+void eik3_get_rho_diff(eik3_s const *eik_parent, size_t diff_idx);
