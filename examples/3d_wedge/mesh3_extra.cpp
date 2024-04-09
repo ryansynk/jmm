@@ -250,14 +250,14 @@ jmm_error_e mesh3_init_from_3d_wedge_spec(mesh3_s *mesh,
   tetrahedralize((char *)switches.c_str(), &in, &out, &addin);
 
   size_t * tetrahedronlist_unsigned = (size_t *)malloc(sizeof(size_t) * out.numberoftetrahedra);
-  for (size_t i = 0; i < out.numberoftetrahedra; ++i) {
+  for (size_t i = 0; i < (size_t)out.numberoftetrahedra*4; ++i) {
     tetrahedronlist_unsigned[i] = (size_t)out.tetrahedronlist[i];
   }
 
   mesh3_data_s data;
-  data.nverts = out.numberofpoints;
+  data.nverts = (size_t)out.numberofpoints;
   data.verts = (dbl3 *)malloc(data.nverts*sizeof(dbl3));
-  data.ncells = out.numberoftetrahedra;
+  data.ncells = (size_t)out.numberoftetrahedra;
   data.cells = (uint4 *)malloc(data.ncells*sizeof(uint4));
 
   memcpy(data.verts, out.pointlist, data.nverts*sizeof(dbl3));
