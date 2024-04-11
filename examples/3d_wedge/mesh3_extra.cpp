@@ -264,6 +264,8 @@ jmm_error_e mesh3_init_from_3d_wedge_spec(mesh3_s *mesh,
   //memcpy(data.cells, out.tetrahedronlist, data.ncells*sizeof(uint4));
   memcpy(data.cells, tetrahedronlist_unsigned, data.ncells*sizeof(uint4));
 
+  dbl3 xsrc = {spec->sp*cos(spec->phip), spec->sp*sin(spec->phip), 0};
+  mesh3_data_insert_vert(&data, xsrc, 1e-10);
   mesh3_init(mesh, &data, true, NULL);
 
   /* Make sure the point source is actually included in the mesh! */
